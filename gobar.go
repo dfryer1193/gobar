@@ -78,10 +78,21 @@ func printBlocks() {
 				disk, err = json.Marshal(blk)
 			case "packages":
 				pack, err = json.Marshal(blk)
+			case "temperature":
+				temp, err = json.Marshal(blk)
+			case "volume":
+				vol, err = json.Marshal(blk)
+			case "media":
+				media, err = json.Marshal(blk)
+			case "date":
+				date, err = json.Marshal(blk)
+			case "time":
+				sysTime, err = json.Marshal(blk)
+			case "battery":
+				bat, err = json.Marshal(blk)
 			}
 		}
 		if err != nil {
-			fmt.Printf("Could not marshal JSON!")
 			// XXX: log to file
 		}
 
