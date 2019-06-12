@@ -27,7 +27,6 @@ type block struct {
 	BorderLeft  int    `json:"border_left"`
 	BorderRight int    `json:"border_right"`
 	BorderTop   int    `json:"border_top"`
-	Background  Color  `json:"background"`
 	Urgent      bool   `json:"urgent"`
 	FullText    string `json:"full_text"`
 }
@@ -50,7 +49,14 @@ func setup() {
 }
 
 func printBlocks() {
-	var disk, pack, temp, vol, media, date, sysTime, bat []byte
+	disk := []byte("{}")
+	pack := []byte("{}")
+	temp := []byte("{}")
+	vol := []byte("{}")
+	media := []byte("{}")
+	date := []byte("{}")
+	sysTime := []byte("{}")
+	bat := []byte("{}")
 	var err error
 
 	blockCh := make(chan *block, 7)
@@ -77,7 +83,8 @@ func printBlocks() {
 			fmt.Printf("Could not marshal JSON!")
 			// XXX: log to file
 		}
-		fmt.Printf(`,[%s,%s,%s,%s,%s,%s,%s,%s]`, disk,
+
+		fmt.Printf(",[%s,%s,%s,%s,%s,%s,%s,%s]", disk,
 			pack,
 			temp,
 			vol,
