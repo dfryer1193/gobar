@@ -60,14 +60,14 @@ func printBlocks() {
 	var err error
 
 	blockCh := make(chan *block, 7)
-	go getDisk(5, blockCh)
-	go getPackages(3600, blockCh)
-	go getTemp(1, blockCh)
-	go getVolume(1, blockCh)
-	go getMedia(1, blockCh)
-	go getDate(3600, blockCh)
-	go getTime(1, blockCh)
-	go getBattery(5, blockCh)
+	go getDisk(5*time.Second, blockCh)
+	go getPackages(1*time.Hour, blockCh)
+	go getTemp(1*time.Second, blockCh)
+	go getVolume(1*time.Second, blockCh)
+	go getMedia(5*time.Second, blockCh)
+	go getDate(1*time.Hour, blockCh)
+	go getTime(1*time.Second, blockCh)
+	go getBattery(5*time.Second, blockCh)
 
 	for {
 		select {
