@@ -35,7 +35,8 @@ func runCmdStdout(cmd *exec.Cmd) ([]string, error) {
 	return stdoutLines, nil
 }
 
-func getDisk(timeout int, blockCh chan<- *block) {
+func getDisk(timeout time.Duration, blockCh chan<- *block) {
+	const hddRune = '\uf7c9'
 	var diskSpace string
 	cmd := exec.Command("df", "-h")
 	diskBlock := block{
@@ -44,7 +45,6 @@ func getDisk(timeout int, blockCh chan<- *block) {
 		BorderLeft:  0,
 		BorderRight: 0,
 		BorderTop:   0,
-		Background:  None,
 		Urgent:      false,
 		FullText:    "",
 	}
@@ -58,21 +58,24 @@ func getDisk(timeout int, blockCh chan<- *block) {
 		if outLines != nil {
 			for _, line := range outLines {
 				if strings.HasSuffix(line, "/home") {
-					diskSpace = strings.Split(line, " ")[3]
+					diskSpace = strings.Fields(line)[3]
 					break
 				}
 			}
-			diskBlock.FullText = diskSpace
+			diskBlock.FullText = string(hddRune) + " " + diskSpace
 		}
 
 		blockCh <- &diskBlock
-		time.Sleep(time.Duration(timeout) * time.Second)
+		time.Sleep(timeout)
 	}
 }
 
-func getPackages(timeout int, blockCh chan<- *block) {
-	cmd := exec.Command("~/.bin/yayupdates")
-	prefix := `⬆`
+func getPackages(timeout time.Duration, blockCh chan<- *block) {
+	const updateSym = '\uf560'
+	const rebootSym = '\u27f3'
+	var prefix string
+	homedir, _ := os.UserHomeDir()
+	cmd := exec.Command(homedir + "/.bin/yayupdates")
 	packageCount := 0
 	packBlock := block{
 		Name:        "packages",
@@ -80,7 +83,6 @@ func getPackages(timeout int, blockCh chan<- *block) {
 		BorderLeft:  0,
 		BorderRight: 0,
 		BorderTop:   0,
-		Background:  None,
 		Urgent:      false,
 		FullText:    "",
 	}
@@ -93,19 +95,19 @@ func getPackages(timeout int, blockCh chan<- *block) {
 
 		if outLines != nil {
 			packageCount = 0
-			prefix = `⬆`
+			prefix = string(updateSym)
 			for _, line := range outLines {
 				packageCount++
 				if strings.HasPrefix(line, "linux ") {
-					prefix += `⟳`
+					prefix += string(rebootSym)
 				}
 			}
 		}
 
-		packBlock.FullText = prefix + strconv.Itoa(packageCount)
+		packBlock.FullText = prefix + " " + strconv.Itoa(packageCount)
 
 		blockCh <- &packBlock
-		time.Sleep(time.Duration(timeout) * time.Second)
+		time.Sleep(timeout)
 	}
 }
 
@@ -118,10 +120,10 @@ func getTempFromPath(path string) float64 {
 	}
 	defer f.Close()
 
-	_, err = f.Read(tmpBytes)
-	if err != io.EOF && err != nil {
-		// XXX: Log error to file
-	}
+	sc := bufio.NewScanner(f)
+	sc.Scan()
+
+	tmpBytes = sc.Bytes()
 
 	val, err = strconv.ParseFloat(string(tmpBytes), 32)
 	if err != nil {
@@ -132,7 +134,8 @@ func getTempFromPath(path string) float64 {
 	return val / 1000.0
 }
 
-func getTemp(timeout int, blockCh chan<- *block) {
+func getTemp(timeout time.Duration, blockCh chan<- *block) {
+	const tempSym = '\uf8c7'
 	tempPath := "/sys/devices/platform/coretemp.0/hwmon/hwmon3/temp1_input"
 	alarmPath := "/sys/devices/platform/coretemp.0/hwmon/hwmon3/temp1_crit"
 	tempBlock := block{
@@ -141,7 +144,6 @@ func getTemp(timeout int, blockCh chan<- *block) {
 		BorderLeft:  0,
 		BorderRight: 0,
 		BorderTop:   0,
-		Background:  None,
 		Urgent:      false,
 		FullText:    "",
 	}
@@ -154,14 +156,16 @@ func getTemp(timeout int, blockCh chan<- *block) {
 			tempBlock.Urgent = true
 		}
 
-		tempBlock.FullText = fmt.Sprintf("+%3.2f°C", tempVal)
+		tempBlock.FullText = fmt.Sprintf("%s %3.1f°C", string(tempSym), tempVal)
 
 		blockCh <- &tempBlock
-		time.Sleep(time.Duration(timeout) * time.Second)
+		time.Sleep(timeout)
 	}
 }
 
-func getVolume(timeout int, blockCh chan<- *block) {
+func getVolume(timeout time.Duration, blockCh chan<- *block) {
+	const soundOnSym = '\uf028'
+	const soundOffSym = '\uf026'
 	stateRegex := regexp.MustCompile(`\[(on|off)\]`)
 	volRegex := regexp.MustCompile(`[0-9]{1,3}%`)
 	var state string
@@ -173,7 +177,6 @@ func getVolume(timeout int, blockCh chan<- *block) {
 		BorderLeft:  0,
 		BorderRight: 0,
 		BorderTop:   0,
-		Background:  None,
 		Urgent:      false,
 		FullText:    "",
 	}
@@ -196,14 +199,15 @@ func getVolume(timeout int, blockCh chan<- *block) {
 			}
 
 			if state == "[off]" {
-				volBlock.FullText = ` MUTE`
+				volBlock.FullText = string(soundOffSym) + " MUTE"
 			} else {
-				volBlock.FullText = ` ` + volume
+				volBlock.FullText = string(soundOnSym) + " " + volume
 			}
 		}
 
 		blockCh <- &volBlock
-		time.Sleep(time.Duration(timeout) * time.Second)
+
+		time.Sleep(timeout)
 	}
 }
 
@@ -226,7 +230,7 @@ func getCurPlayer(players []string) string {
 	return ""
 }
 
-func getMedia(timeout int, blockCh chan<- *block) {
+func getMedia(timeout time.Duration, blockCh chan<- *block) {
 	var curPlayer string
 	fmtStr := `{{ emoji(status) }} {{ artist }} - {{ title }}`
 	mediaBlock := block{
@@ -235,7 +239,6 @@ func getMedia(timeout int, blockCh chan<- *block) {
 		BorderLeft:  0,
 		BorderRight: 0,
 		BorderTop:   0,
-		Background:  None,
 		Urgent:      false,
 		FullText:    "",
 	}
