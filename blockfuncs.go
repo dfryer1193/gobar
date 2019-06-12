@@ -3,7 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
+	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -28,6 +29,8 @@ func runCmdStdout(cmd *exec.Cmd) ([]string, error) {
 	for sc.Scan() {
 		stdoutLines = append(stdoutLines, sc.Text())
 	}
+
+	cmd.Wait()
 
 	return stdoutLines, nil
 }
