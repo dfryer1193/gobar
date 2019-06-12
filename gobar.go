@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -103,12 +104,10 @@ func readClicks() {
 
 func main() {
 	//TODO: Build this around a config file
+	wg := sync.WaitGroup{}
+	wg.Add(2)
 	setup()
-	for {
-		fmt.Printf(",[")
-		go printBlocks()
-		go readClicks()
-		fmt.Printf("]")
-		time.Sleep(1 * time.Second)
-	}
+	go printBlocks()
+	go readClicks()
+	wg.Wait()
 }
