@@ -32,19 +32,6 @@ type block struct {
 	FullText    string `json:"full_text"`
 }
 
-type click struct {
-	Name      string   `json:"name"`
-	Instance  string   `json:"instance"`
-	Button    int      `json:"button"`
-	Modifiers []string `json:"modifiers"`
-	X         int      `json:"x"`
-	Y         int      `json:"y"`
-	RelativeX int      `json:"relative_x"`
-	RelativeY int      `json:"relative_y"`
-	Width     int      `json:"width"`
-	Height    int      `json:"height"`
-}
-
 func setup() {
 	fmt.Printf(`{ "version": 1, "click_events": true }[[]`)
 }
@@ -107,18 +94,12 @@ func printBlocks() {
 	}
 }
 
-//	fmt.Printf(`,[%s%s%s%s%s%s%s%s`,)
-
-func readClicks() {
-
-}
-
 func main() {
 	//TODO: Build this around a config file
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 	setup()
 	go printBlocks()
-	go readClicks()
+	go handleClicks()
 	wg.Wait()
 }
