@@ -40,7 +40,7 @@ func getDisk(timeout time.Duration, blockCh chan<- *block) {
 	var diskSpace string
 	cmd := exec.Command("df", "-h")
 	diskBlock := block{
-		Name:        "disk",
+		Name:        "DISK",
 		Border:      Red,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -78,7 +78,7 @@ func getPackages(timeout time.Duration, blockCh chan<- *block) {
 	cmd := exec.Command(homedir + "/.bin/yayupdates")
 	packageCount := 0
 	packBlock := block{
-		Name:        "packages",
+		Name:        "PACKAGES",
 		Border:      Green,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -139,7 +139,7 @@ func getTemp(timeout time.Duration, blockCh chan<- *block) {
 	tempPath := "/sys/devices/platform/coretemp.0/hwmon/hwmon3/temp1_input"
 	alarmPath := "/sys/devices/platform/coretemp.0/hwmon/hwmon3/temp1_crit"
 	tempBlock := block{
-		Name:        "temperature",
+		Name:        "TEMP",
 		Border:      Blue,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -172,7 +172,7 @@ func getVolume(timeout time.Duration, blockCh chan<- *block) {
 	var volume string
 	cmd := exec.Command("amixer", "get", "Master")
 	volBlock := block{
-		Name:        "volume",
+		Name:        "VOLUME",
 		Border:      White,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -234,7 +234,7 @@ func getMedia(timeout time.Duration, blockCh chan<- *block) {
 	var curPlayer string
 	fmtStr := `{{ emoji(status) }} {{ artist }} - {{ title }}`
 	mediaBlock := block{
-		Name:        "media",
+		Name:        "MEDIA",
 		Border:      Red,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -279,7 +279,7 @@ func getMedia(timeout time.Duration, blockCh chan<- *block) {
 func getDate(timeout time.Duration, blockCh chan<- *block) {
 	const calendarSym = '\uf073'
 	dateBlock := block{
-		Name:        "date",
+		Name:        "DATE",
 		Border:      Green,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -302,7 +302,7 @@ func getDate(timeout time.Duration, blockCh chan<- *block) {
 func getTime(timeout time.Duration, blockCh chan<- *block) {
 	const clockSym = '\uf64f'
 	timeBlock := block{
-		Name:        "time",
+		Name:        "TIME",
 		Border:      Blue,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -431,7 +431,7 @@ func getBattery(timeout time.Duration, blockCh chan<- *block) {
 	hasBattery := false
 
 	batBlock := block{
-		Name:        "battery",
+		Name:        "BATTERY",
 		Border:      White,
 		BorderLeft:  0,
 		BorderRight: 0,

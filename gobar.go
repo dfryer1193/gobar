@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"sync"
@@ -61,21 +62,21 @@ func printBlocks() {
 		select {
 		case blk := <-blockCh:
 			switch blk.Name {
-			case "disk":
+			case "DISK":
 				disk, err = json.Marshal(blk)
-			case "packages":
+			case "PACKAGES":
 				pack, err = json.Marshal(blk)
-			case "temperature":
+			case "TEMP":
 				temp, err = json.Marshal(blk)
-			case "volume":
+			case "VOLUME":
 				vol, err = json.Marshal(blk)
-			case "media":
+			case "MEDIA":
 				media, err = json.Marshal(blk)
-			case "date":
+			case "DATE":
 				date, err = json.Marshal(blk)
-			case "time":
+			case "TIME":
 				sysTime, err = json.Marshal(blk)
-			case "battery":
+			case "BATTERY":
 				bat, err = json.Marshal(blk)
 			}
 		}
@@ -83,14 +84,19 @@ func printBlocks() {
 			// XXX: log to file
 		}
 
-		fmt.Printf(",[%s,%s,%s,%s,%s,%s,%s,%s]", disk,
+		fmt.Printf(",[%s,%s,%s,%s,%s,%s,%s", disk,
 			pack,
 			temp,
 			vol,
 			media,
 			date,
-			sysTime,
-			bat)
+			sysTime)
+
+		if !bytes.Equal(bat, []byte("{}")) {
+			fmt.Printf(",%s", bat)
+		}
+
+		fmt.Printf("]")
 	}
 }
 
