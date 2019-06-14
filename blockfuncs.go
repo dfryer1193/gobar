@@ -21,6 +21,7 @@ func runCmdStdout(cmd *exec.Cmd) ([]string, error) {
 	}
 	defer stdout.Close()
 	if err := cmd.Start(); err != nil {
+		logErr(err)
 		return nil, err
 	}
 
@@ -38,7 +39,6 @@ func runCmdStdout(cmd *exec.Cmd) ([]string, error) {
 func getDisk(timeout time.Duration, blockCh chan<- *block) {
 	const hddRune = '\uf7c9'
 	var diskSpace string
-	cmd := exec.Command("df", "-h")
 	diskBlock := block{
 		Name:        "DISK",
 		Border:      Red,
@@ -50,6 +50,7 @@ func getDisk(timeout time.Duration, blockCh chan<- *block) {
 	}
 
 	for {
+		cmd := exec.Command("df", "-h")
 		outLines, err := runCmdStdout(cmd)
 		if err != nil {
 			// XXX: Log err to file
@@ -75,7 +76,6 @@ func getPackages(timeout time.Duration, blockCh chan<- *block) {
 	const rebootSym = '\u27f3'
 	var prefix string
 	homedir, _ := os.UserHomeDir()
-	cmd := exec.Command(homedir + "/.bin/yayupdates")
 	packageCount := 0
 	packBlock := block{
 		Name:        "PACKAGES",
@@ -88,6 +88,7 @@ func getPackages(timeout time.Duration, blockCh chan<- *block) {
 	}
 
 	for {
+		cmd := exec.Command(homedir + "/.bin/yayupdates")
 		outLines, err := runCmdStdout(cmd)
 		if err != nil {
 			// XXX: Log err to file
@@ -170,7 +171,6 @@ func getVolume(timeout time.Duration, blockCh chan<- *block) {
 	volRegex := regexp.MustCompile(`[0-9]{1,3}%`)
 	var state string
 	var volume string
-	cmd := exec.Command("amixer", "get", "Master")
 	volBlock := block{
 		Name:        "VOLUME",
 		Border:      White,
@@ -182,9 +182,10 @@ func getVolume(timeout time.Duration, blockCh chan<- *block) {
 	}
 
 	for {
+		cmd := exec.Command("amixer", "get", "Master")
 		outLines, err := runCmdStdout(cmd)
 		if err != nil {
-			//XXX: Log err to file
+			logErr(err)
 		}
 
 		if outLines != nil {
@@ -193,8 +194,6 @@ func getVolume(timeout time.Duration, blockCh chan<- *block) {
 				volume = string(volRegex.Find([]byte(line)))
 				if state == "" || volume == "" {
 					continue
-				} else {
-					break
 				}
 			}
 
