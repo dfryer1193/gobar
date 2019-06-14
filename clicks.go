@@ -101,18 +101,27 @@ func handleClicks() {
 
 	for {
 		s, err := rd.ReadString('\n')
+		if err != nil {
+			logErr(err)
+			continue
+		}
+
 		if strings.HasPrefix(s, ",") {
 			s = s[1:]
 		}
 
+		if strings.HasPrefix(s, "[") {
+			continue
+		}
+
 		err = json.Unmarshal([]byte(s), &evt)
 		if err != nil {
-			//XXX: Log err to file
+			logErr(err)
 		}
 
 		sock, err := i3ipc.GetIPCSocket()
 		if err != nil {
-			// XXX: Log err to file
+			logErr(err)
 			return
 		}
 		switch evt.Name {
