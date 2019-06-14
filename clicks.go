@@ -14,11 +14,11 @@ import (
 type button int
 
 const (
-	leftClick   button = 1
-	middleClick button = 2
-	rightClick  button = 3
-	scrollUp    button = 4
-	scrollDown  button = 5
+	leftClick button = iota + 1
+	middleClick
+	rightClick
+	scrollUp
+	scrollDown
 )
 
 type click struct {
