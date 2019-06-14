@@ -34,29 +34,25 @@ type click struct {
 	Height    int      `json:"height"`
 }
 
-func getWinIDsByName(sock *i3ipc.IPCSocket, name string) ([]int64, bool) {
+func getWinIDsByName(sock *i3ipc.IPCSocket, name string) []int64 {
 	var ids []int64
 	root, err := sock.GetTree()
 	if err != nil {
-		//XXX: Log err to file
-		return nil, false
+		logErr(err)
+		return nil
 	}
 	wins := root.FindNamed(name)
-
-	if len(wins) < 1 {
-		return ids, false
-	}
 
 	for _, win := range wins {
 		ids = append(ids, win.ID)
 	}
 
-	return ids, true
+	return ids
 }
 
 func toggleWidget(sock *i3ipc.IPCSocket, name string, x, y int) error {
-	diskWins, isOpen := getWinIDsByName(sock, name)
-	if isOpen {
+	diskWins := getWinIDsByName(sock, name)
+	if len(diskWins) > 0 {
 		for _, winID := range diskWins {
 			strID := strconv.FormatInt(winID, 10)
 			_, err := sock.Command(`[con_id=` + strID + `] kill`)
