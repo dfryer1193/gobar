@@ -125,7 +125,7 @@ func handleClicks() {
 			return
 		}
 		switch evt.Name {
-		case "disk":
+		case "DISK":
 			clickDisk(sock, &evt)
 		}
 	}
