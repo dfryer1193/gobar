@@ -91,12 +91,12 @@ func getPackages(timeout time.Duration, blockCh chan<- *block) {
 		cmd := exec.Command(homedir + "/.bin/yayupdates")
 		outLines, err := runCmdStdout(cmd)
 		if err != nil {
-			// XXX: Log err to file
+			logErr(err)
 		}
 
+		prefix = string(updateSym)
 		if outLines != nil {
 			packageCount = 0
-			prefix = string(updateSym)
 			for _, line := range outLines {
 				packageCount++
 				if strings.HasPrefix(line, "linux ") {
