@@ -38,7 +38,7 @@ func getWinIDsByName(sock *i3ipc.IPCSocket, name string) []int64 {
 	var ids []int64
 	root, err := sock.GetTree()
 	if err != nil {
-		logErr(err)
+		fileLog(err)
 		return nil
 	}
 	wins := root.FindNamed(name)
@@ -102,7 +102,7 @@ func handleClicks() {
 	for {
 		s, err := rd.ReadString('\n')
 		if err != nil {
-			logErr(err)
+			fileLog(err)
 			continue
 		}
 
@@ -116,7 +116,7 @@ func handleClicks() {
 
 		err = json.Unmarshal([]byte(s), &evt)
 		if err != nil {
-			logErr(err)
+			fileLog(err)
 		}
 
 		sock, err := i3ipc.GetIPCSocket()

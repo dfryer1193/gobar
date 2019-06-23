@@ -7,42 +7,19 @@ import (
 
 const logFile string = "/.i3/gobar.log"
 
-func logErr(e error) {
-	home, err := os.UserHomeDir()
+func fileLog(v ...interface{}) {
+	homedir, err := os.UserHomeDir()
 	if err != nil {
-		home = "/tmp"
+		return
 	}
 
-	f, err := os.OpenFile(home+logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(homedir+logFile, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
+	defer f.Close()
 
-	if _, err := f.Write([]byte(e.Error() + "\n")); err != nil {
-		log.Fatal(err)
-	}
+	logger := log.New(f, "", log.Ldate|log.Ltime)
 
-	if err := f.Close(); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func logStr(s string) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		home = "/tmp"
-	}
-
-	f, err := os.OpenFile(home+logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if _, err := f.Write([]byte(s + "\n")); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := f.Close(); err != nil {
-		log.Fatal(err)
-	}
+	logger.Println(v...)
 }

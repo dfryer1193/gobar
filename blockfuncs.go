@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -21,7 +20,7 @@ func runCmdStdout(cmd *exec.Cmd) ([]string, error) {
 	}
 	defer stdout.Close()
 	if err := cmd.Start(); err != nil {
-		logErr(err)
+		fileLog(err)
 		return nil, err
 	}
 
@@ -53,7 +52,7 @@ func getDisk(timeout time.Duration, blockCh chan<- *block) {
 		cmd := exec.Command("df", "-h")
 		outLines, err := runCmdStdout(cmd)
 		if err != nil {
-			// XXX: Log err to file
+			fileLog(err)
 		}
 
 		if outLines != nil {
@@ -91,7 +90,7 @@ func getPackages(timeout time.Duration, blockCh chan<- *block) {
 		cmd := exec.Command(homedir + "/.bin/yayupdates")
 		outLines, err := runCmdStdout(cmd)
 		if err != nil {
-			logErr(err)
+			fileLog(err)
 		}
 
 		prefix = string(updateSym)
@@ -117,7 +116,7 @@ func getTempFromPath(path string) float64 {
 	val := 0.0
 	f, err := os.Open(path)
 	if err != nil {
-		// XXX: Log error to file
+		fileLog(err)
 	}
 	defer f.Close()
 
@@ -128,7 +127,7 @@ func getTempFromPath(path string) float64 {
 
 	val, err = strconv.ParseFloat(string(tmpBytes), 32)
 	if err != nil {
-		// XXX: Log error to file
+		fileLog(err)
 		val = 0.0
 	}
 
@@ -185,7 +184,7 @@ func getVolume(timeout time.Duration, blockCh chan<- *block) {
 		cmd := exec.Command("amixer", "get", "Master")
 		outLines, err := runCmdStdout(cmd)
 		if err != nil {
-			logErr(err)
+			fileLog(err)
 		}
 
 		if outLines != nil {
@@ -220,7 +219,7 @@ func getCurPlayer(players []string) string {
 		stateCmd := exec.Command("playerctl", "-p", player, "status")
 		state, err := runCmdStdout(stateCmd)
 		if err != nil {
-			//XXX: log to file
+			fileLog(err)
 		}
 		if state[0] == "Playing" {
 			return player
@@ -245,7 +244,7 @@ func getMedia(timeout time.Duration, blockCh chan<- *block) {
 	for {
 		players, err := getPlayers()
 		if err != nil {
-			// XXX: Log err to file
+			fileLog(err)
 		}
 
 		tmp := getCurPlayer(players)
@@ -258,9 +257,8 @@ func getMedia(timeout time.Duration, blockCh chan<- *block) {
 			infoCmd := exec.Command("playerctl", "-p", curPlayer, "metadata", "-f", fmtStr)
 			state, err := runCmdStdout(infoCmd)
 			if err != nil {
-				// XXX: log to file
-				log.Fatal(err)
-				//continue
+				fileLog(err)
+				continue
 			}
 
 			if len(state) > 0 {
@@ -347,7 +345,7 @@ const (
 func getACState(dir string) bool {
 	f, err := os.Open(dir + "/online")
 	if err != nil {
-		// XXX: Log err to file
+		fileLog(err)
 		return false
 	}
 	defer f.Close()
@@ -357,7 +355,7 @@ func getACState(dir string) bool {
 
 	val, err := strconv.Atoi(sc.Text())
 	if err != nil {
-		//XXX: log err to file
+		fileLog(err)
 		return false
 	}
 
@@ -370,7 +368,7 @@ func getACState(dir string) bool {
 func getBatteryPct(dir string) int {
 	f, err := os.Open(dir + "/capacity")
 	if err != nil {
-		//XXX: Log err to file
+		fileLog(err)
 		return -1
 	}
 	defer f.Close()
@@ -380,7 +378,7 @@ func getBatteryPct(dir string) int {
 
 	val, err := strconv.Atoi(sc.Text())
 	if err != nil {
-		//XXX: Log err to file
+		fileLog(err)
 		return -1
 	}
 	return val
@@ -389,7 +387,7 @@ func getBatteryPct(dir string) int {
 func showBatAlert() {
 	homedir, err := os.UserHomeDir()
 	if err != nil {
-		//XXX: Log err to file
+		fileLog(err)
 	}
 
 	if _, err := os.Stat(homedir + "/.i3/.bat_notified"); os.IsNotExist(err) {
@@ -398,7 +396,7 @@ func showBatAlert() {
 
 		f, err := os.Create(homedir + "/.i3/.bat_notified")
 		if err != nil {
-			//XXX: Log err to file
+			fileLog(err)
 		}
 		f.Close()
 	}
@@ -407,7 +405,7 @@ func showBatAlert() {
 func clearBatAlert() {
 	homedir, err := os.UserHomeDir()
 	if err != nil {
-		//XXX: Log err to file
+		fileLog(err)
 	}
 
 	if _, err := os.Stat(homedir + "/.i3/.bat_notified"); os.IsNotExist(err) {
@@ -416,7 +414,7 @@ func clearBatAlert() {
 
 	err = os.Remove(homedir + "/.i3/.bat_notified")
 	if err != nil {
-		//XXX: Log err to file
+		fileLog(err)
 	}
 
 }
@@ -442,7 +440,7 @@ func getBattery(timeout time.Duration, blockCh chan<- *block) {
 	for {
 		powerSupplies, err := ioutil.ReadDir(powerSupplyDir)
 		if err != nil {
-			// XXX: Log err to file
+			fileLog(err)
 		}
 		//TODO: Handle multiple power supplies.
 		for _, f := range powerSupplies {

@@ -81,7 +81,7 @@ func printBlocks() {
 			}
 		}
 		if err != nil {
-			// XXX: log to file
+			fileLog(err)
 		}
 
 		fmt.Printf(",[%s,%s,%s,%s,%s,%s,%s", disk,
