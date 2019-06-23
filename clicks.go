@@ -3,12 +3,11 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"os"
-	"strconv"
 	"strings"
-	"time"
 
-	"github.com/mdirkse/i3ipc"
+	"go.i3wm.org/i3"
 )
 
 type button int
@@ -34,64 +33,58 @@ type click struct {
 	Height    int      `json:"height"`
 }
 
-func getWinIDsByName(sock *i3ipc.IPCSocket, name string) []int64 {
-	var ids []int64
-	root, err := sock.GetTree()
+func isShowing(name string) *i3.Node {
+	tree, err := i3.GetTree()
 	if err != nil {
 		fileLog(err)
 		return nil
 	}
-	wins := root.FindNamed(name)
 
-	for _, win := range wins {
-		ids = append(ids, win.ID)
-	}
-
-	return ids
+	return tree.Root.FindChild(func(n *i3.Node) bool {
+		return n.Name == name
+	})
 }
 
-func toggleWidget(sock *i3ipc.IPCSocket, name string, x, y int) error {
-	diskWins := getWinIDsByName(sock, name)
-	if len(diskWins) > 0 {
-		for _, winID := range diskWins {
-			strID := strconv.FormatInt(winID, 10)
-			_, err := sock.Command(`[con_id=` + strID + `] kill`)
-			if err != nil {
-				return err
-			}
-		}
+func kill(n *i3.Node) {
+	i3cmd := fmt.Sprintf(`[con_id=%d] kill`, n.ID)
+	i3.RunCommand(i3cmd)
+}
+
+func diskWidget(name string, x, y int) error {
+	if widget := isShowing(name); widget != nil {
+		kill(widget)
 		return nil
 	}
 
-	xStr := strconv.Itoa(x)
-	yStr := strconv.Itoa(y)
+	sub := i3.Subscribe(i3.WindowEventType)
+	defer sub.Close()
 
-	switch name {
-	case "DISK":
-		return diskWidget(sock, name, xStr, yStr)
+	_, err := i3.RunCommand(`exec termite --hold -t "DISK" -e "df -h"`)
+	if err != nil {
+		return err
 	}
 
+	var win i3.Node
+	for sub.Next() {
+		evt := sub.Event().(*i3.WindowEvent)
+
+		if evt.Change == "new" {
+			if evt.Container.Name == name {
+				win = evt.Container
+				break
+			}
+		}
+	}
+
+	i3cmd := fmt.Sprintf(`[con_id="%d"] move position %d %d`, win.ID, x, y)
+	i3.RunCommand(i3cmd)
 	return nil
 }
 
-func diskWidget(sock *i3ipc.IPCSocket, name, x, y string) error {
-	sock.Command(`exec termite --hold -t "DISK" -e "df -h"`)
-	time.Sleep(100 * time.Millisecond) // wait for the window to be created
-	sock.Command(`[title="^DISK$"] move position ` + x + ` ` + y)
-	return nil
-}
-
-func clickDisk(sock *i3ipc.IPCSocket, evt *click) {
+func clickDisk(evt *click) {
 	switch button(evt.Button) {
 	case leftClick:
-		toggleWidget(sock, evt.Name, evt.X, evt.Y)
-	}
-}
-
-func clickPackages(sock *i3ipc.IPCSocket, evt *click) {
-	switch button(evt.Button) {
-	case leftClick:
-		toggleWidget(sock, evt.Name, evt.X, evt.Y)
+		diskWidget(evt.Name, evt.X, evt.Y)
 	}
 }
 
@@ -119,14 +112,9 @@ func handleClicks() {
 			fileLog(err)
 		}
 
-		sock, err := i3ipc.GetIPCSocket()
-		if err != nil {
-			logErr(err)
-			return
-		}
 		switch evt.Name {
 		case "DISK":
-			clickDisk(sock, &evt)
+			clickDisk(&evt)
 		}
 	}
 }
