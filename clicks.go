@@ -10,10 +10,8 @@ import (
 	"go.i3wm.org/i3"
 )
 
-type button int
-
 const (
-	leftClick button = iota + 1
+	leftClick int = iota + 1
 	middleClick
 	rightClick
 	scrollUp
@@ -33,58 +31,106 @@ type click struct {
 	Height    int      `json:"height"`
 }
 
-func isShowing(name string) *i3.Node {
-	tree, err := i3.GetTree()
-	if err != nil {
-		fileLog(err)
-		return nil
-	}
-
-	return tree.Root.FindChild(func(n *i3.Node) bool {
-		return n.Name == name
-	})
+type widget struct {
+	title string
+	cmd   string
+	node  *i3.Node
 }
 
-func kill(n *i3.Node) {
-	i3cmd := fmt.Sprintf(`[con_id=%d] kill`, n.ID)
+var widgetMap = make(map[string]*widget)
+
+func (n *widget) kill() {
+	i3cmd := fmt.Sprintf(`[con_id=%d] kill`, n.node.ID)
 	i3.RunCommand(i3cmd)
+	n.node = nil
 }
 
-func diskWidget(name string, x, y int) error {
-	if widget := isShowing(name); widget != nil {
-		kill(widget)
+func (n *widget) toggle(x, y int) error {
+	if n.node != nil {
+		n.kill()
 		return nil
 	}
 
 	sub := i3.Subscribe(i3.WindowEventType)
 	defer sub.Close()
 
-	_, err := i3.RunCommand(`exec termite --hold -t "DISK" -e "df -h"`)
+	_, err := i3.RunCommand(n.cmd)
 	if err != nil {
 		return err
 	}
 
-	var win i3.Node
 	for sub.Next() {
 		evt := sub.Event().(*i3.WindowEvent)
-
 		if evt.Change == "new" {
-			if evt.Container.Name == name {
-				win = evt.Container
+			if evt.Container.Name == n.title {
+				n.node = &evt.Container
 				break
 			}
 		}
 	}
 
-	i3cmd := fmt.Sprintf(`[con_id="%d"] move position %d %d`, win.ID, x, y)
+	i3cmd := fmt.Sprintf(`[con_id="%d"] move position %d %d`, n.node.ID, x, y)
 	i3.RunCommand(i3cmd)
 	return nil
 }
 
+func getWidget(name string) *widget {
+	if widgetMap[name] == nil {
+		widgetMap[name] = &widget{
+			title: name,
+			cmd:   "",
+			node:  nil,
+		}
+	}
+
+	return widgetMap[name]
+}
+
 func clickDisk(evt *click) {
-	switch button(evt.Button) {
+	w := getWidget(evt.Name)
+	if w.cmd == "" {
+		w.cmd = `exec termite --hold -t "` + evt.Name + `" -e "df -h"`
+	}
+
+	switch evt.Button {
 	case leftClick:
-		diskWidget(evt.Name, evt.X, evt.Y)
+		err := w.toggle(evt.X, evt.Y)
+		if err != nil {
+			fileLog(err)
+		}
+	}
+}
+
+func clickPackages(evt *click) {
+	w := getWidget(evt.Name)
+	if w.cmd == "" {
+		homedir, err := os.UserHomeDir()
+		if err != nil {
+			fileLog("Couldn't get home dir:", err)
+		}
+		w.cmd = `exec termite --hold -t "` + evt.Name + `" -e "` + homedir + `/.bin/updateNames.sh"`
+	}
+	switch evt.Button {
+	case leftClick:
+		err := w.toggle(evt.X, evt.Y)
+		if err != nil {
+			fileLog(err)
+		}
+	}
+}
+
+func clickTemp(evt *click) {
+	w := getWidget(evt.Name)
+	if w.cmd == "" {
+		w.cmd = `exec termite --hold -t "` + evt.Name + `" -e "echo $(cat /proc/loadavg | cut -d \  -f -3)"`
+	}
+
+	switch evt.Button {
+	case leftClick:
+		err := w.toggle(evt.X, evt.Y)
+		if err != nil {
+			fileLog(err)
+		}
 	}
 }
 
@@ -95,7 +141,7 @@ func handleClicks() {
 	for {
 		s, err := rd.ReadString('\n')
 		if err != nil {
-			fileLog(err)
+			fileLog("Input err", err)
 			continue
 		}
 
@@ -109,12 +155,16 @@ func handleClicks() {
 
 		err = json.Unmarshal([]byte(s), &evt)
 		if err != nil {
-			fileLog(err)
+			fileLog("JSON Unmarshal err", err)
 		}
 
 		switch evt.Name {
-		case "DISK":
+		case DISK_NAME:
 			clickDisk(&evt)
+		case PACK_NAME:
+			clickPackages(&evt)
+		case TEMP_NAME:
+			clickTemp(&evt)
 		}
 	}
 }
