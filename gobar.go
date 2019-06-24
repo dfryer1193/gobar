@@ -62,21 +62,21 @@ func printBlocks() {
 		select {
 		case blk := <-blockCh:
 			switch blk.Name {
-			case "DISK":
+			case DISK_NAME:
 				disk, err = json.Marshal(blk)
-			case "PACKAGES":
+			case PACK_NAME:
 				pack, err = json.Marshal(blk)
-			case "TEMP":
+			case TEMP_NAME:
 				temp, err = json.Marshal(blk)
-			case "VOLUME":
+			case VOL_NAME:
 				vol, err = json.Marshal(blk)
-			case "MEDIA":
+			case MEDIA_NAME:
 				media, err = json.Marshal(blk)
-			case "DATE":
+			case DATE_NAME:
 				date, err = json.Marshal(blk)
-			case "TIME":
+			case TIME_NAME:
 				sysTime, err = json.Marshal(blk)
-			case "BATTERY":
+			case BATTERY_NAME:
 				bat, err = json.Marshal(blk)
 			}
 		}

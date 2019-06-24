@@ -12,6 +12,17 @@ import (
 	"time"
 )
 
+const (
+	DISK_NAME    string = "DISK"
+	PACK_NAME    string = "PACKAGES"
+	TEMP_NAME    string = "TEMPERATURE"
+	VOL_NAME     string = "VOLUME"
+	MEDIA_NAME   string = "MEDIA"
+	DATE_NAME    string = "DATE"
+	TIME_NAME    string = "TIME"
+	BATTERY_NAME string = "BATTERY"
+)
+
 func runCmdStdout(cmd *exec.Cmd) ([]string, error) {
 	var stdoutLines []string
 	stdout, err := cmd.StdoutPipe()
@@ -39,7 +50,7 @@ func getDisk(timeout time.Duration, blockCh chan<- *block) {
 	const hddRune = '\uf7c9'
 	var diskSpace string
 	diskBlock := block{
-		Name:        "DISK",
+		Name:        DISK_NAME,
 		Border:      Red,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -77,7 +88,7 @@ func getPackages(timeout time.Duration, blockCh chan<- *block) {
 	homedir, _ := os.UserHomeDir()
 	packageCount := 0
 	packBlock := block{
-		Name:        "PACKAGES",
+		Name:        PACK_NAME,
 		Border:      Green,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -139,7 +150,7 @@ func getTemp(timeout time.Duration, blockCh chan<- *block) {
 	tempPath := "/sys/devices/platform/coretemp.0/hwmon/hwmon3/temp1_input"
 	alarmPath := "/sys/devices/platform/coretemp.0/hwmon/hwmon3/temp1_crit"
 	tempBlock := block{
-		Name:        "TEMP",
+		Name:        TEMP_NAME,
 		Border:      Blue,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -171,7 +182,7 @@ func getVolume(timeout time.Duration, blockCh chan<- *block) {
 	var state string
 	var volume string
 	volBlock := block{
-		Name:        "VOLUME",
+		Name:        VOL_NAME,
 		Border:      White,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -232,7 +243,7 @@ func getMedia(timeout time.Duration, blockCh chan<- *block) {
 	var curPlayer string
 	fmtStr := `{{ emoji(status) }} {{ artist }} - {{ title }}`
 	mediaBlock := block{
-		Name:        "MEDIA",
+		Name:        MEDIA_NAME,
 		Border:      Red,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -276,7 +287,7 @@ func getMedia(timeout time.Duration, blockCh chan<- *block) {
 func getDate(timeout time.Duration, blockCh chan<- *block) {
 	const calendarSym = '\uf073'
 	dateBlock := block{
-		Name:        "DATE",
+		Name:        DATE_NAME,
 		Border:      Green,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -299,7 +310,7 @@ func getDate(timeout time.Duration, blockCh chan<- *block) {
 func getTime(timeout time.Duration, blockCh chan<- *block) {
 	const clockSym = '\uf64f'
 	timeBlock := block{
-		Name:        "TIME",
+		Name:        TIME_NAME,
 		Border:      Blue,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -428,7 +439,7 @@ func getBattery(timeout time.Duration, blockCh chan<- *block) {
 	hasBattery := false
 
 	batBlock := block{
-		Name:        "BATTERY",
+		Name:        BATTERY_NAME,
 		Border:      White,
 		BorderLeft:  0,
 		BorderRight: 0,
