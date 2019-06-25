@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"go.i3wm.org/i3"
@@ -134,6 +135,26 @@ func clickTemp(evt *click) {
 	}
 }
 
+func clickVolume(evt *click) {
+	action := ""
+	sndChannel := "Master"
+
+	switch evt.Button {
+	case leftClick:
+		action = "toggle"
+	case scrollUp:
+		action = "5%+"
+	case scrollDown:
+		action = "5%-"
+	}
+
+	cmd := exec.Command("amixer", "set", sndChannel, action)
+
+	if err := cmd.Run(); err != nil {
+		fileLog("Could not control volume:", err)
+	}
+}
+
 func handleClicks() {
 	var evt click
 	rd := bufio.NewReader(os.Stdin)
@@ -165,6 +186,8 @@ func handleClicks() {
 			clickPackages(&evt)
 		case TEMP_NAME:
 			clickTemp(&evt)
+		case VOL_NAME:
+			clickVolume(&evt)
 		}
 	}
 }
