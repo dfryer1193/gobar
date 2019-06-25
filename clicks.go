@@ -174,6 +174,21 @@ func clickMedia(evt *click) {
 	}
 }
 
+func clickDate(evt *click) {
+	w := getWidget(evt.Name)
+	if w.cmd == "" {
+		w.cmd = `exec termite --hold -t "` + evt.Name + `" -e "cal -3"`
+	}
+
+	switch evt.Button {
+	case leftClick:
+		err := w.toggle(evt.X, evt.Y)
+		if err != nil {
+			fileLog(err)
+		}
+	}
+}
+
 func handleClicks() {
 	var evt click
 	rd := bufio.NewReader(os.Stdin)
@@ -209,6 +224,8 @@ func handleClicks() {
 			clickVolume(&evt)
 		case MEDIA_NAME:
 			clickMedia(&evt)
+		case DATE_NAME:
+			clickDate(&evt)
 		}
 	}
 }
