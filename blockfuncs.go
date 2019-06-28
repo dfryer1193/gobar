@@ -239,9 +239,23 @@ func getCurPlayer(players []string) string {
 	return ""
 }
 
+func getMediaState(player string) string {
+	status, err := runCmdStdout(exec.Command("playerctl", "-p", player, "status"))
+	if err != nil {
+		fileLog(err)
+	}
+	if len(status) > 0 {
+		if status[0] == "Playing" {
+			return string('\uf04c')
+		}
+	}
+
+	return string('\uf04b')
+}
+
 func getMedia(timeout time.Duration, blockCh chan<- *block) {
 	var curPlayer string
-	fmtStr := `{{ emoji(status) }} {{ artist }} - {{ title }}`
+	fmtStr := `{{ artist }} - {{ title }}`
 	mediaBlock := block{
 		Name:        MEDIA_NAME,
 		Border:      Red,
@@ -274,7 +288,7 @@ func getMedia(timeout time.Duration, blockCh chan<- *block) {
 
 			if len(state) > 0 {
 				if state[0] != "" {
-					mediaBlock.FullText = state[0]
+					mediaBlock.FullText = getMediaState(curPlayer) + " " + state[0]
 				}
 			}
 		}
