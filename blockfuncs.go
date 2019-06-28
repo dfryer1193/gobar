@@ -145,10 +145,41 @@ func getTempFromPath(path string) float64 {
 	return val / 1000.0
 }
 
+func findHWMon() string {
+	platformDir := `/sys/devices/platform/`
+	coretempRegex := regexp.MustCompile(`coretemp\.[0-9]+`)
+	hwmonRegex := regexp.MustCompile(`hwmon[0-9]`)
+	platformDevices, err := ioutil.ReadDir(platformDir)
+	if err != nil {
+		fileLog(err)
+		return ""
+	}
+
+	for _, pDev := range platformDevices {
+		if coretempRegex.MatchString(pDev.Name()) {
+			coretempDevices, err := ioutil.ReadDir(platformDir + pDev.Name() + "/hwmon/")
+			if err != nil {
+				fileLog(err)
+				return ""
+			}
+			for _, dev := range coretempDevices {
+				if hwmonRegex.MatchString(dev.Name()) {
+					return platformDir + pDev.Name() + "/hwmon/" + dev.Name()
+				}
+			}
+		}
+	}
+	return ""
+}
+
 func getTemp(timeout time.Duration, blockCh chan<- *block) {
 	const tempSym = '\uf8c7'
-	tempPath := "/sys/devices/platform/coretemp.0/hwmon/hwmon3/temp1_input"
-	alarmPath := "/sys/devices/platform/coretemp.0/hwmon/hwmon3/temp1_crit"
+	thermMon := findHWMon()
+	if thermMon == "" {
+		return
+	}
+	tempPath := thermMon + "/temp1_input"
+	alarmPath := thermMon + "/temp1_crit"
 	tempBlock := block{
 		Name:        TEMP_NAME,
 		Border:      Blue,
