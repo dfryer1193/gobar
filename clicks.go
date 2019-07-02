@@ -33,12 +33,40 @@ type click struct {
 }
 
 type widget struct {
-	title string
-	cmd   string
-	node  *i3.Node
+	title  string
+	cmd    string
+	node   *i3.Node
+	width  int64
+	height int64
 }
 
 var widgetMap = make(map[string]*widget)
+
+func getFocusedOutput() *i3.Node {
+	tree, err := i3.GetTree()
+	if err != nil {
+		fileLog(err)
+	}
+
+	return tree.Root.FindFocused(func(n *i3.Node) bool {
+		return n.Type == i3.OutputNode
+	})
+}
+
+func (n *widget) setPosition(x, y int) (int, int) {
+	adjX, adjY := int64(x), int64(y)
+	output := getFocusedOutput()
+
+	if adjX+n.width > output.Rect.Width {
+		adjX = output.Rect.Width - n.width
+	}
+
+	if adjY+n.height > output.Rect.Height {
+		adjY = output.Rect.Height - n.height
+	}
+
+	return int(adjX), int(adjY)
+}
 
 func (n *widget) kill() {
 	i3cmd := fmt.Sprintf(`[con_id=%d] kill`, n.node.ID)
@@ -70,17 +98,22 @@ func (n *widget) toggle(x, y int) error {
 		}
 	}
 
-	i3cmd := fmt.Sprintf(`[con_id="%d"] move position %d %d`, n.node.ID, x, y)
-	i3.RunCommand(i3cmd)
+	x, y = n.setPosition(x, y)
+	resizeCmd := fmt.Sprintf(`[con_id="%d"] resize set %d %d`, n.node.ID, n.width, n.height)
+	moveCmd := fmt.Sprintf(`[con_id="%d"] move position %d %d`, n.node.ID, x, y)
+	i3.RunCommand(resizeCmd)
+	i3.RunCommand(moveCmd)
 	return nil
 }
 
 func getWidget(name string) *widget {
 	if widgetMap[name] == nil {
 		widgetMap[name] = &widget{
-			title: name,
-			cmd:   "",
-			node:  nil,
+			title:  name,
+			cmd:    "",
+			node:   nil,
+			width:  100,
+			height: 100,
 		}
 	}
 
@@ -91,6 +124,8 @@ func clickDisk(evt *click) {
 	w := getWidget(evt.Name)
 	if w.cmd == "" {
 		w.cmd = `exec termite --hold -t "` + evt.Name + `" -e "df -h"`
+		w.width = 535
+		w.height = 215
 	}
 
 	switch evt.Button {
@@ -110,6 +145,8 @@ func clickPackages(evt *click) {
 			fileLog("Couldn't get home dir:", err)
 		}
 		w.cmd = `exec termite --hold -t "` + evt.Name + `" -e "` + homedir + `/.bin/updateNames.sh"`
+		w.width = 300
+		w.height = 500
 	}
 	switch evt.Button {
 	case leftClick:
@@ -124,6 +161,8 @@ func clickTemp(evt *click) {
 	w := getWidget(evt.Name)
 	if w.cmd == "" {
 		w.cmd = `exec termite --hold -t "` + evt.Name + `" -e "echo $(cat /proc/loadavg | cut -d \  -f -3)"`
+		w.width = 115
+		w.height = 50
 	}
 
 	switch evt.Button {
@@ -178,6 +217,8 @@ func clickDate(evt *click) {
 	w := getWidget(evt.Name)
 	if w.cmd == "" {
 		w.cmd = `exec termite --hold -t "` + evt.Name + `" -e "cal -3"`
+		w.width = 525
+		w.height = 170
 	}
 
 	switch evt.Button {
