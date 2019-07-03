@@ -57,12 +57,12 @@ func (n *widget) setPosition(x, y int) (int, int) {
 	adjX, adjY := int64(x), int64(y)
 	output := getFocusedOutput()
 
-	if adjX+n.width > output.Rect.Width {
-		adjX = output.Rect.Width - n.width
+	if adjX+n.width > (output.Rect.Width + output.Rect.X) {
+		adjX = (output.Rect.Width - n.width) + output.Rect.X
 	}
 
-	if adjY+n.height > output.Rect.Height {
-		adjY = output.Rect.Height - n.height
+	if adjY+n.height > (output.Rect.Height + output.Rect.Y) {
+		adjY = (output.Rect.Height - n.height) + output.Rect.Y
 	}
 
 	return int(adjX), int(adjY)
