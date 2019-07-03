@@ -12,15 +12,16 @@ import (
 	"time"
 )
 
+// Enum for block names
 const (
-	DISK_NAME    string = "DISK"
-	PACK_NAME    string = "PACKAGES"
-	TEMP_NAME    string = "TEMPERATURE"
-	VOL_NAME     string = "VOLUME"
-	MEDIA_NAME   string = "MEDIA"
-	DATE_NAME    string = "DATE"
-	TIME_NAME    string = "TIME"
-	BATTERY_NAME string = "BATTERY"
+	DiskName    string = "DISK"
+	PackName    string = "PACKAGES"
+	TempName    string = "TEMPERATURE"
+	VolName     string = "VOLUME"
+	MediaName   string = "MEDIA"
+	DateName    string = "DATE"
+	TimeName    string = "TIME"
+	BatteryName string = "BATTERY"
 )
 
 func runCmdStdout(cmd *exec.Cmd) ([]string, error) {
@@ -50,7 +51,7 @@ func getDisk(timeout time.Duration, blockCh chan<- *block) {
 	const hddRune = '\uf7c9'
 	var diskSpace string
 	diskBlock := block{
-		Name:        DISK_NAME,
+		Name:        DiskName,
 		Border:      Red,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -88,7 +89,7 @@ func getPackages(timeout time.Duration, blockCh chan<- *block) {
 	homedir, _ := os.UserHomeDir()
 	packageCount := 0
 	packBlock := block{
-		Name:        PACK_NAME,
+		Name:        PackName,
 		Border:      Green,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -181,7 +182,7 @@ func getTemp(timeout time.Duration, blockCh chan<- *block) {
 	tempPath := thermMon + "/temp1_input"
 	alarmPath := thermMon + "/temp1_crit"
 	tempBlock := block{
-		Name:        TEMP_NAME,
+		Name:        TempName,
 		Border:      Blue,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -213,7 +214,7 @@ func getVolume(timeout time.Duration, blockCh chan<- *block) {
 	var state string
 	var volume string
 	volBlock := block{
-		Name:        VOL_NAME,
+		Name:        VolName,
 		Border:      White,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -326,7 +327,7 @@ func (state *mediaState) scroll() string {
 func getMedia(timeout time.Duration, blockCh chan<- *block) {
 	fmtStr := `{{ artist }} - {{ title }}`
 	mediaBlock := block{
-		Name:        MEDIA_NAME,
+		Name:        MediaName,
 		Border:      Red,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -374,7 +375,7 @@ func getMedia(timeout time.Duration, blockCh chan<- *block) {
 func getDate(timeout time.Duration, blockCh chan<- *block) {
 	const calendarSym = '\uf073'
 	dateBlock := block{
-		Name:        DATE_NAME,
+		Name:        DateName,
 		Border:      Green,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -397,7 +398,7 @@ func getDate(timeout time.Duration, blockCh chan<- *block) {
 func getTime(timeout time.Duration, blockCh chan<- *block) {
 	const clockSym = '\uf64f'
 	timeBlock := block{
-		Name:        TIME_NAME,
+		Name:        TimeName,
 		Border:      Blue,
 		BorderLeft:  0,
 		BorderRight: 0,
@@ -526,7 +527,7 @@ func getBattery(timeout time.Duration, blockCh chan<- *block) {
 	hasBattery := false
 
 	batBlock := block{
-		Name:        BATTERY_NAME,
+		Name:        BatteryName,
 		Border:      White,
 		BorderLeft:  0,
 		BorderRight: 0,

@@ -255,17 +255,17 @@ func handleClicks() {
 		}
 
 		switch evt.Name {
-		case DISK_NAME:
+		case DiskName:
 			clickDisk(&evt)
-		case PACK_NAME:
+		case PackName:
 			clickPackages(&evt)
-		case TEMP_NAME:
+		case TempName:
 			clickTemp(&evt)
-		case VOL_NAME:
+		case VolName:
 			clickVolume(&evt)
-		case MEDIA_NAME:
+		case MediaName:
 			clickMedia(&evt)
-		case DATE_NAME:
+		case DateName:
 			clickDate(&evt)
 		}
 	}
