@@ -420,6 +420,7 @@ func getTime(timeout time.Duration, blockCh chan<- *block) {
 
 type bat rune
 
+// Enum of battery icons
 const (
 	BatFull     bat = '\uf578'
 	Bat10       bat = BatFull + 1
