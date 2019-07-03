@@ -251,9 +251,13 @@ func getVolume(timeout time.Duration, blockCh chan<- *block) {
 	}
 }
 
-func getPlayers() ([]string, error) {
+func getPlayers() []string {
 	cmd := exec.Command("playerctl", "-l")
-	return runCmdStdout(cmd)
+	out, err := runCmdStdout(cmd)
+	if err != nil {
+		fileLog(err)
+	}
+	return out
 }
 
 func getCurPlayer(players []string) string {
@@ -284,8 +288,42 @@ func getMediaState(player string) string {
 	return string('\uf04b')
 }
 
+type mediaState struct {
+	lastPlayer string
+	text       string
+	head       int
+	tail       int
+}
+
+func (state *mediaState) scroll() string {
+	if len(state.text) > 50 {
+		if state.head == state.tail {
+			state.tail = 46
+		}
+
+		if state.tail+1 == len(state.text) {
+			state.tail = -1
+		}
+
+		if state.head+1 == len(state.text) {
+			state.head = -1
+		}
+
+		state.tail++
+		state.head++
+
+		if state.tail < state.head {
+			return state.text[state.head:] + "   " + state.text[:state.tail]
+		}
+
+		return state.text[state.head:state.tail] + "..."
+	}
+	state.head = -1
+	state.tail = -1
+	return state.text
+}
+
 func getMedia(timeout time.Duration, blockCh chan<- *block) {
-	var curPlayer string
 	fmtStr := `{{ artist }} - {{ title }}`
 	mediaBlock := block{
 		Name:        MEDIA_NAME,
@@ -296,30 +334,34 @@ func getMedia(timeout time.Duration, blockCh chan<- *block) {
 		Urgent:      false,
 		FullText:    "",
 	}
+	state := mediaState{
+		lastPlayer: "",
+		text:       "",
+		head:       -1,
+		tail:       -1,
+	}
 
 	for {
-		players, err := getPlayers()
-		if err != nil {
-			fileLog(err)
+		tmp := getCurPlayer(getPlayers())
+
+		if tmp != "" && tmp != state.lastPlayer {
+			state.lastPlayer = tmp
 		}
 
-		tmp := getCurPlayer(players)
-
-		if tmp != "" && tmp != curPlayer {
-			curPlayer = tmp
-		}
-
-		if curPlayer != "" {
-			infoCmd := exec.Command("playerctl", "-p", curPlayer, "metadata", "-f", fmtStr)
-			state, err := runCmdStdout(infoCmd)
+		if state.lastPlayer != "" {
+			infoCmd := exec.Command("playerctl", "-p", state.lastPlayer, "metadata", "-f", fmtStr)
+			curState, err := runCmdStdout(infoCmd)
 			if err != nil {
 				fileLog(err)
 				continue
 			}
 
-			if len(state) > 0 {
-				if state[0] != "" {
-					mediaBlock.FullText = getMediaState(curPlayer) + " " + state[0]
+			if len(curState) > 0 {
+				if curState[0] != "" {
+					if curState[0] != state.text {
+						state.text = curState[0]
+					}
+					mediaBlock.FullText = getMediaState(state.lastPlayer) + " " + state.scroll()
 				}
 			}
 		}
