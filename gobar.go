@@ -53,7 +53,7 @@ func printBlocks() {
 	go getPackages(1*time.Hour, blockCh)
 	go getTemp(1*time.Second, blockCh)
 	go getVolume(1*time.Second, blockCh)
-	go getMedia(5*time.Second, blockCh)
+	go getMedia(1*time.Second, blockCh)
 	go getDate(1*time.Hour, blockCh)
 	go getTime(1*time.Second, blockCh)
 	go getBattery(5*time.Second, blockCh)
