@@ -361,6 +361,8 @@ func getMedia(timeout time.Duration, blockCh chan<- *block) {
 				if curState[0] != "" {
 					if curState[0] != state.text {
 						state.text = curState[0]
+						state.head = -1
+						state.tail = -1
 					}
 					mediaBlock.FullText = getMediaState(state.lastPlayer) + " " + state.scroll()
 				}
