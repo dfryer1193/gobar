@@ -123,7 +123,7 @@ func getWidget(name string) *widget {
 func clickDisk(evt *click) {
 	w := getWidget(evt.Name)
 	if w.cmd == "" {
-		w.cmd = `exec termite --hold -t "` + evt.Name + `" -e "df -h"`
+		w.cmd = `exec alacritty --hold -t "` + evt.Name + `" -e df -h`
 		w.width = 535
 		w.height = 215
 	}
@@ -144,7 +144,7 @@ func clickPackages(evt *click) {
 		if err != nil {
 			fileLog("Couldn't get home dir:", err)
 		}
-		w.cmd = `exec termite --hold -t "` + evt.Name + `" -e "` + homedir + `/.bin/updateNames.sh"`
+		w.cmd = `exec alacritty --hold -t "` + evt.Name + `" -e ` + homedir + `/.bin/updateNames.sh`
 		w.width = 300
 		w.height = 500
 	}
@@ -160,7 +160,7 @@ func clickPackages(evt *click) {
 func clickTemp(evt *click) {
 	w := getWidget(evt.Name)
 	if w.cmd == "" {
-		w.cmd = `exec termite --hold -t "` + evt.Name + `" -e "echo $(cat /proc/loadavg | cut -d \  -f -3)"`
+		w.cmd = `exec alacritty --hold -t "` + evt.Name + `" -e echo $(cat /proc/loadavg | cut -d \  -f -3)`
 		w.width = 115
 		w.height = 50
 	}
@@ -216,7 +216,7 @@ func clickMedia(evt *click) {
 func clickDate(evt *click) {
 	w := getWidget(evt.Name)
 	if w.cmd == "" {
-		w.cmd = `exec termite --hold -t "` + evt.Name + `" -e "cal -3"`
+		w.cmd = `exec alacritty --hold -t "` + evt.Name + `" -e cal -3`
 		w.width = 525
 		w.height = 170
 	}
