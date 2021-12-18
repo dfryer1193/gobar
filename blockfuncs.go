@@ -48,7 +48,7 @@ func runCmdStdout(cmd *exec.Cmd) ([]string, error) {
 }
 
 func getDisk(timeout time.Duration, blockCh chan<- *block) {
-	const hddRune = '\uf7c9'
+	const hddRune = '\uf51f'
 	var diskSpace string
 	diskBlock := block{
 		Name:        DiskName,
@@ -83,8 +83,8 @@ func getDisk(timeout time.Duration, blockCh chan<- *block) {
 }
 
 func getPackages(timeout time.Duration, blockCh chan<- *block) {
-	const updateSym = '\uf560'
-	const rebootSym = '\u27f3'
+	const updateSym = '\uf077'
+	const rebootSym = '\uf139'
 	var prefix string
 	homedir, _ := os.UserHomeDir()
 	packageCount := 0
@@ -111,7 +111,7 @@ func getPackages(timeout time.Duration, blockCh chan<- *block) {
 			for _, line := range outLines {
 				packageCount++
 				if strings.HasPrefix(line, "linux ") {
-					prefix += string(rebootSym)
+					prefix = string(rebootSym)
 				}
 			}
 		}
@@ -174,7 +174,7 @@ func findHWMon() string {
 }
 
 func getTemp(timeout time.Duration, blockCh chan<- *block) {
-	const tempSym = '\uf8c7'
+	const tempSym = '\uf769'
 	thermMon := findHWMon()
 	if thermMon == "" {
 		return
@@ -398,7 +398,7 @@ func getDate(timeout time.Duration, blockCh chan<- *block) {
 }
 
 func getTime(timeout time.Duration, blockCh chan<- *block) {
-	const clockSym = '\uf64f'
+	const clockSym = '\uf017'
 	timeBlock := block{
 		Name:        TimeName,
 		Border:      Blue,
@@ -424,24 +424,12 @@ type bat rune
 
 // Enum of battery icons
 const (
-	BatFull     bat = '\uf578'
-	Bat10       bat = BatFull + 1
-	Bat20       bat = BatFull + 2
-	Bat30       bat = BatFull + 3
-	Bat40       bat = BatFull + 4
-	Bat50       bat = BatFull + 5
-	Bat60       bat = BatFull + 6
-	Bat70       bat = BatFull + 7
-	Bat80       bat = BatFull + 8
-	Bat90       bat = BatFull + 9
-	BatAlert    bat = BatFull + 10
-	BatCharged  bat = '\uf584'
-	Bat10Charge bat = BatCharged + 1
-	Bat25Charge bat = BatCharged + 2
-	Bat50Charge bat = BatCharged + 3
-	Bat65Charge bat = BatCharged + 4
-	Bat80Charge bat = BatCharged + 5
-	Bat95Charge bat = BatCharged + 6
+	BatFull     bat = '\uf240'
+	Bat75       bat = BatFull + 1
+	Bat50       bat = BatFull + 2
+	Bat25       bat = BatFull + 3
+	BatAlert    bat = BatFull + 4
+	BatCharging bat = '\uf0e7'
 )
 
 func getACState(dir string) bool {
@@ -557,45 +545,18 @@ func getBattery(timeout time.Duration, blockCh chan<- *block) {
 		}
 
 		if charging {
-			switch {
-			case batLevel < 11:
-				batBlock.FullText = string(Bat10Charge)
-			case batLevel < 26:
-				batBlock.FullText = string(Bat25Charge)
-			case batLevel < 51:
-				batBlock.FullText = string(Bat50Charge)
-			case batLevel < 66:
-				batBlock.FullText = string(Bat65Charge)
-			case batLevel < 81:
-				batBlock.FullText = string(Bat80Charge)
-			case batLevel < 96:
-				batBlock.FullText = string(Bat95Charge)
-			default:
-				batBlock.FullText = string(BatCharged)
-			}
+			batBlock.FullText = string(BatCharging)
 		} else {
 			switch {
 			case batLevel < 10:
 				batBlock.FullText = string(BatAlert)
 				showBatAlert()
-			case batLevel < 20:
-				batBlock.FullText = string(Bat10)
-			case batLevel < 30:
-				batBlock.FullText = string(Bat20)
-			case batLevel < 40:
-				batBlock.FullText = string(Bat30)
-			case batLevel < 50:
-				batBlock.FullText = string(Bat40)
-			case batLevel < 60:
+			case batLevel < 26:
+				batBlock.FullText = string(Bat25)
+			case batLevel < 51:
 				batBlock.FullText = string(Bat50)
-			case batLevel < 70:
-				batBlock.FullText = string(Bat60)
-			case batLevel < 80:
-				batBlock.FullText = string(Bat70)
-			case batLevel < 90:
-				batBlock.FullText = string(Bat80)
-			case batLevel < 95:
-				batBlock.FullText = string(Bat90)
+			case batLevel < 76:
+				batBlock.FullText = string(Bat75)
 			default:
 				batBlock.FullText = string(BatFull)
 			}
