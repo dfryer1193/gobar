@@ -194,25 +194,6 @@ func clickVolume(evt *click) {
 	}
 }
 
-func clickMedia(evt *click) {
-	action := ""
-
-	switch evt.Button {
-	case leftClick:
-		action = "play-pause"
-	case scrollUp:
-		action = "previous"
-	case scrollDown:
-		action = "next"
-	}
-
-	cmd := exec.Command("playerctl", action)
-
-	if err := cmd.Run(); err != nil {
-		fileLog("Could not control media:", err)
-	}
-}
-
 func clickDate(evt *click) {
 	w := getWidget(evt.Name)
 	if w.cmd == "" {
