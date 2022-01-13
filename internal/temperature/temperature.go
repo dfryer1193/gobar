@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"gobar/internal/blockutils"
+	"gobar/internal/clickutils"
 	"gobar/internal/log"
 	"io/ioutil"
 	"os"
@@ -93,5 +94,23 @@ func GetTemp(timeout time.Duration, blockCh chan<- *blockutils.Block) {
 
 		blockCh <- &tempBlock
 		time.Sleep(timeout)
+	}
+}
+
+// ClickTemp handles click events for the temperature block
+func ClickTemp(evt *clickutils.Click) {
+	w := clickutils.GetWidget(evt.Name)
+	if w.Cmd == "" {
+		w.Cmd = `exec alacritty --hold -t "` + evt.Name + `" -e echo $(cat /proc/loadavg | cut -d \  -f -3)`
+		w.Width = 115
+		w.Height = 50
+	}
+
+	switch evt.Button {
+	case clickutils.LeftClick:
+		err := w.Toggle(evt.X, evt.Y)
+		if err != nil {
+			log.FileLog(err)
+		}
 	}
 }

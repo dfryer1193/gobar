@@ -2,6 +2,7 @@ package media
 
 import (
 	"gobar/internal/blockutils"
+	"gobar/internal/clickutils"
 	"gobar/internal/log"
 	"os/exec"
 	"time"
@@ -97,7 +98,6 @@ func GetMedia(timeout time.Duration, blockCh chan<- *blockutils.Block) {
 	}
 }
 
-/*
 // ClickMedia handles click events for the media block.
 func ClickMedia(evt *clickutils.Click) {
 	action := ""
@@ -116,4 +116,4 @@ func ClickMedia(evt *clickutils.Click) {
 	if err := cmd.Run(); err != nil {
 		log.FileLog("Could not control media:", err)
 	}
-}*/
+}

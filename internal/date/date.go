@@ -3,6 +3,8 @@ package date
 import (
 	"fmt"
 	"gobar/internal/blockutils"
+	"gobar/internal/clickutils"
+	"gobar/internal/log"
 	"time"
 )
 
@@ -27,5 +29,23 @@ func GetDate(timeout time.Duration, blockCh chan<- *blockutils.Block) {
 		blockCh <- &dateBlock
 
 		time.Sleep(timeout)
+	}
+}
+
+// ClickDate handles click events for the date block
+func ClickDate(evt *clickutils.Click) {
+	w := clickutils.GetWidget(evt.Name)
+	if w.Cmd == "" {
+		w.Cmd = `exec alacritty --hold -t "` + evt.Name + `" -e cal -3`
+		w.Width = 525
+		w.Height = 170
+	}
+
+	switch evt.Button {
+	case clickutils.LeftClick:
+		err := w.Toggle(evt.X, evt.Y)
+		if err != nil {
+			log.FileLog(err)
+		}
 	}
 }

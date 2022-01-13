@@ -2,6 +2,7 @@ package disk
 
 import (
 	"gobar/internal/blockutils"
+	"gobar/internal/clickutils"
 	"gobar/internal/log"
 	"os/exec"
 	"strings"
@@ -41,5 +42,23 @@ func GetDisk(timeout time.Duration, blockCh chan<- *blockutils.Block) {
 
 		blockCh <- &diskBlock
 		time.Sleep(timeout)
+	}
+}
+
+// ClickDisk - handles click events for the disk block
+func ClickDisk(evt *clickutils.Click) {
+	w := clickutils.GetWidget(evt.Name)
+	if w.Cmd == "" {
+		w.Cmd = `exec alacritty --hold -t "` + evt.Name + `" -e df -h`
+		w.Width = 535
+		w.Height = 215
+	}
+
+	switch evt.Button {
+	case clickutils.LeftClick:
+		err := w.Toggle(evt.X, evt.Y)
+		if err != nil {
+			log.FileLog(err)
+		}
 	}
 }

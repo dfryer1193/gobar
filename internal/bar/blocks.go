@@ -1,11 +1,13 @@
 package bar
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"gobar/internal/battery"
 	"gobar/internal/blockutils"
+	"gobar/internal/clickutils"
 	"gobar/internal/date"
 	"gobar/internal/disk"
 	"gobar/internal/log"
@@ -14,6 +16,8 @@ import (
 	"gobar/internal/systime"
 	"gobar/internal/temperature"
 	"gobar/internal/volume"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -78,5 +82,47 @@ func PrintBlocks() {
 		}
 
 		fmt.Printf("]")
+	}
+}
+
+// HandleClicks handles click events for the bar
+func HandleClicks() {
+	var evt clickutils.Click
+	rd := bufio.NewReader(os.Stdin)
+
+	for {
+		s, err := rd.ReadString('\n')
+		if err != nil {
+			log.FileLog("Input err", err)
+			continue
+		}
+
+		if strings.HasPrefix(s, ",") {
+			s = s[1:]
+		}
+
+		if strings.HasPrefix(s, "[") {
+			continue
+		}
+
+		err = json.Unmarshal([]byte(s), &evt)
+		if err != nil {
+			log.FileLog("JSON Unmarshal err", err)
+		}
+
+		switch evt.Name {
+		case blockutils.DiskName:
+			disk.ClickDisk(&evt)
+		case blockutils.PackName:
+			packages.ClickPackages(&evt)
+		case blockutils.TempName:
+			temperature.ClickTemp(&evt)
+		case blockutils.VolName:
+			volume.ClickVolume(&evt)
+		case blockutils.MediaName:
+			media.ClickMedia(&evt)
+		case blockutils.DateName:
+			date.ClickDate(&evt)
+		}
 	}
 }

@@ -2,6 +2,7 @@ package packages
 
 import (
 	"gobar/internal/blockutils"
+	"gobar/internal/clickutils"
 	"gobar/internal/log"
 	"os"
 	"os/exec"
@@ -51,5 +52,26 @@ func GetPackages(timeout time.Duration, blockCh chan<- *blockutils.Block) {
 
 		blockCh <- &packBlock
 		time.Sleep(timeout)
+	}
+}
+
+// ClickPackages handles click events on the package block
+func ClickPackages(evt *clickutils.Click) {
+	w := clickutils.GetWidget(evt.Name)
+	if w.Cmd == "" {
+		homedir, err := os.UserHomeDir()
+		if err != nil {
+			log.FileLog("Couldn't get home dir:", err)
+		}
+		w.Cmd = `exec alacritty --hold -t "` + evt.Name + `" -e ` + homedir + `/.bin/updateNames.sh`
+		w.Width = 300
+		w.Height = 500
+	}
+	switch evt.Button {
+	case clickutils.LeftClick:
+		err := w.Toggle(evt.X, evt.Y)
+		if err != nil {
+			log.FileLog(err)
+		}
 	}
 }

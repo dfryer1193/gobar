@@ -17,6 +17,6 @@ func main() {
 	wg.Add(2)
 	setup()
 	go bar.PrintBlocks()
-	//go handleClicks()
+	go bar.HandleClicks()
 	wg.Wait()
 }

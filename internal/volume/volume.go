@@ -2,6 +2,7 @@ package volume
 
 import (
 	"gobar/internal/blockutils"
+	"gobar/internal/clickutils"
 	"gobar/internal/log"
 	"os/exec"
 	"regexp"
@@ -52,5 +53,26 @@ func GetVolume(timeout time.Duration, blockCh chan<- *blockutils.Block) {
 		blockCh <- &volBlock
 
 		time.Sleep(timeout)
+	}
+}
+
+// ClickVolume handles click events for the volume block
+func ClickVolume(evt *clickutils.Click) {
+	action := ""
+	sndChannel := "Master"
+
+	switch evt.Button {
+	case clickutils.LeftClick:
+		action = "toggle"
+	case clickutils.ScrollUp:
+		action = "5%+"
+	case clickutils.ScrollDown:
+		action = "5%-"
+	}
+
+	cmd := exec.Command("amixer", "set", sndChannel, action)
+
+	if err := cmd.Run(); err != nil {
+		log.FileLog("Could not control volume:", err)
 	}
 }
