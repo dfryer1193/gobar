@@ -49,17 +49,13 @@ func getACState(dir string) bool {
 }
 
 func getBatteryPct(dir string) int {
-	f, err := os.Open(dir + "/capacity")
+	text, err := os.ReadFile(dir + "/capacity")
 	if err != nil {
 		log.FileLog(err)
 		return -1
 	}
-	defer f.Close()
 
-	sc := bufio.NewScanner(f)
-	sc.Scan()
-
-	val, err := strconv.Atoi(sc.Text())
+	val, err := strconv.Atoi(string(text))
 	if err != nil {
 		log.FileLog(err)
 		return -1
