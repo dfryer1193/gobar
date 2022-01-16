@@ -88,14 +88,14 @@ func PrintBlocks() {
 // HandleClicks handles click events for the bar
 func HandleClicks() {
 	var evt clickutils.Click
-	rd := bufio.NewReader(os.Stdin)
+	sc := bufio.NewScanner(os.Stdin)
 
-	for {
-		s, err := rd.ReadString('\n')
-		if err != nil {
+	for sc.Scan() {
+		if err := sc.Err(); err != nil {
 			log.FileLog("Input err", err)
 			continue
 		}
+		s := sc.Text()
 
 		if strings.HasPrefix(s, ",") {
 			s = s[1:]
@@ -105,8 +105,7 @@ func HandleClicks() {
 			continue
 		}
 
-		err = json.Unmarshal([]byte(s), &evt)
-		if err != nil {
+		if err := json.Unmarshal([]byte(s), &evt); err != nil {
 			log.FileLog("JSON Unmarshal err", err)
 		}
 
