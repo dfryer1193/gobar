@@ -29,7 +29,9 @@ func RunCmdStdout(cmd *exec.Cmd) ([]string, error) {
 		stdoutLines = append(stdoutLines, sc.Text())
 	}
 
-	cmd.Wait()
-
+	if err := cmd.Wait(); err != nil {
+		log.FileLog(err)
+		return nil, err
+	}
 	return stdoutLines, nil
 }
