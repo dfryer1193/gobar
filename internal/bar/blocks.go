@@ -33,7 +33,7 @@ func PrintBlocks() {
 	batJSON := []byte("{}")
 	var err error
 
-	blockCh := make(chan *blockutils.Block, 7)
+	blockCh := make(chan *blockutils.Block, 1)
 	go disk.GetDisk(5*time.Second, blockCh)
 	go packages.GetPackages(1*time.Hour, blockCh)
 	go temperature.GetTemp(1*time.Second, blockCh)
