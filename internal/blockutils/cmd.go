@@ -22,6 +22,10 @@ func RunCmdStdout(cmd *exec.Cmd) ([]string, error) {
 	sc := bufio.NewScanner(stdout)
 
 	for sc.Scan() {
+		if err := sc.Err(); err != nil {
+			log.FileLog(err)
+			return nil, err
+		}
 		stdoutLines = append(stdoutLines, sc.Text())
 	}
 
