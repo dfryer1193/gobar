@@ -24,6 +24,7 @@ func GetDisk(timeout time.Duration, blockCh chan<- *blockutils.Block) {
 	}
 
 	for {
+		// TODO: Use syscall.Statfs for this.
 		cmd := exec.Command("df", "-h")
 		outLines, err := blockutils.RunCmdStdout(cmd)
 		if err != nil {
