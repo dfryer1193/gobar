@@ -13,6 +13,9 @@ import (
 	"time"
 )
 
+var coretempRegex = regexp.MustCompile(`coretemp\.[0-9]+`)
+var hwmonRegex = regexp.MustCompile(`hwmon[0-9]`)
+
 func getTempFromPath(path string) float64 {
 	var tmpBytes []byte
 	val := 0.0
@@ -38,8 +41,6 @@ func getTempFromPath(path string) float64 {
 
 func findHWMon() string {
 	platformDir := `/sys/devices/platform/`
-	coretempRegex := regexp.MustCompile(`coretemp\.[0-9]+`)
-	hwmonRegex := regexp.MustCompile(`hwmon[0-9]`)
 	platformDevices, err := ioutil.ReadDir(platformDir)
 	if err != nil {
 		log.FileLog(err)

@@ -13,6 +13,9 @@ import (
 	"time"
 )
 
+var batRegex = regexp.MustCompile(`BAT[0-9]+`)
+var acRegex = regexp.MustCompile(`AC`)
+
 type bat rune
 
 // Enum of battery icons
@@ -102,8 +105,6 @@ func clearBatAlert() {
 func GetBattery(timeout time.Duration, blockCh chan<- *blockutils.Block) {
 	const powerSupplyDir = "/sys/class/power_supply/"
 	var charging bool
-	batRegex := regexp.MustCompile(`BAT[0-9]+`)
-	acRegex := regexp.MustCompile(`AC`)
 	batLevel := -1
 	hasBattery := false
 

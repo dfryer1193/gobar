@@ -9,12 +9,13 @@ import (
 	"time"
 )
 
+var stateRegex = regexp.MustCompile(`\[(on|off)\]`)
+var volRegex = regexp.MustCompile(`[0-9]{1,3}%`)
+
 // GetVolume returns a block containing the system volume
 func GetVolume(timeout time.Duration, blockCh chan<- *blockutils.Block) {
 	const soundOnSym = '\uf028'
 	const soundOffSym = '\uf026'
-	stateRegex := regexp.MustCompile(`\[(on|off)\]`)
-	volRegex := regexp.MustCompile(`[0-9]{1,3}%`)
 	var state string
 	var volume string
 	volBlock := blockutils.Block{
