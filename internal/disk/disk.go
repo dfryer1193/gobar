@@ -12,16 +12,18 @@ import (
 
 // Disk represents a disk block
 type Disk struct {
-	Block  *blockutils.Block
-	Widget *clickutils.Widget
+	block  *blockutils.Block
+	widget *clickutils.Widget
 }
+
+const name = blockutils.DiskName
+const hddRune = '\uf51f'
 
 // NewDisk - returns a new Disk object
 func NewDisk() *Disk {
-	name := blockutils.DiskName
 	return &Disk{
-		Block: &blockutils.Block{
-			Name:        blockutils.DiskName,
+		block: &blockutils.Block{
+			Name:        name,
 			Border:      blockutils.Red,
 			BorderLeft:  0,
 			BorderRight: 0,
@@ -29,7 +31,7 @@ func NewDisk() *Disk {
 			Urgent:      false,
 			FullText:    "",
 		},
-		Widget: &clickutils.Widget{
+		widget: &clickutils.Widget{
 			Title:  name,
 			Cmd:    `exec alacritty --hold -t "` + name + `" -e df -h`,
 			Width:  535,
@@ -40,7 +42,6 @@ func NewDisk() *Disk {
 
 // Refresh - refreshes the information for the block on a set interval
 func (d *Disk) Refresh(timeout time.Duration) {
-	const hddRune = '\uf51f'
 	var diskSpace string
 
 	for {
@@ -58,7 +59,7 @@ func (d *Disk) Refresh(timeout time.Duration) {
 					break
 				}
 			}
-			d.Block.FullText = string(hddRune) + " " + diskSpace
+			d.block.FullText = string(hddRune) + " " + diskSpace
 		}
 
 		time.Sleep(timeout)
@@ -67,7 +68,7 @@ func (d *Disk) Refresh(timeout time.Duration) {
 
 // Marshal - Marshals the disk block into json
 func (d *Disk) Marshal() []byte {
-	out, err := json.Marshal(d.Block)
+	out, err := json.Marshal(d.block)
 	if err != nil {
 		log.FileLog(err)
 		return []byte("{}")
@@ -77,16 +78,9 @@ func (d *Disk) Marshal() []byte {
 
 // Click - handles click events for the disk block
 func (d *Disk) Click(evt *clickutils.Click) {
-	w := d.Widget
-	if w.Cmd == "" {
-		w.Cmd = `exec alacritty --hold -t "` + evt.Name + `" -e df -h`
-		w.Width = 535
-		w.Height = 215
-	}
-
 	switch evt.Button {
 	case clickutils.LeftClick:
-		err := w.Toggle(evt.X, evt.Y)
+		err := d.widget.Toggle(evt.X, evt.Y)
 		if err != nil {
 			log.FileLog(err)
 		}
