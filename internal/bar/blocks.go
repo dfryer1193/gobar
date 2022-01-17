@@ -61,6 +61,7 @@ func PrintBlocks() {
 		}
 
 		fmt.Printf("]")
+		time.Sleep(1 * time.Second)
 	}
 }
 
