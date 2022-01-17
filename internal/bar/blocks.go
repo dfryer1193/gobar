@@ -21,20 +21,25 @@ import (
 	"time"
 )
 
+var diskBlk = disk.NewDisk()
+
 // PrintBlocks prints all blocks and handles click events
 func PrintBlocks() {
-	diskJSON := []byte("{}")
-	packJSON := []byte("{}")
-	tempJSON := []byte("{}")
-	volJSON := []byte("{}")
-	mediaJSON := []byte("{}")
-	dateJSON := []byte("{}")
-	sysTimeJSON := []byte("{}")
-	batJSON := []byte("{}")
+	empty := []byte("{}")
+
+	packJSON := empty
+	tempJSON := empty
+	volJSON := empty
+	mediaJSON := empty
+	dateJSON := empty
+	sysTimeJSON := empty
+	batJSON := empty
+
 	var err error
 
 	blockCh := make(chan *blockutils.Block, 1)
-	go disk.GetDisk(5*time.Second, blockCh)
+
+	go diskBlk.Refresh(5 * time.Second)
 	go packages.GetPackages(1*time.Hour, blockCh)
 	go temperature.GetTemp(1*time.Second, blockCh)
 	go volume.GetVolume(1*time.Second, blockCh)
@@ -47,8 +52,6 @@ func PrintBlocks() {
 		select {
 		case blk := <-blockCh:
 			switch blk.Name {
-			case blockutils.DiskName:
-				diskJSON, err = json.Marshal(blk)
 			case blockutils.PackName:
 				packJSON, err = json.Marshal(blk)
 			case blockutils.TempName:
@@ -69,7 +72,7 @@ func PrintBlocks() {
 			log.FileLog(err)
 		}
 
-		fmt.Printf(",[%s,%s,%s,%s,%s,%s,%s", diskJSON,
+		fmt.Printf(",[%s,%s,%s,%s,%s,%s,%s", diskBlk.Marshal(),
 			packJSON,
 			tempJSON,
 			volJSON,
@@ -77,7 +80,7 @@ func PrintBlocks() {
 			dateJSON,
 			sysTimeJSON)
 
-		if !bytes.Equal(batJSON, []byte("{}")) {
+		if !bytes.Equal(batJSON, empty) {
 			fmt.Printf(",%s", batJSON)
 		}
 
@@ -109,9 +112,9 @@ func HandleClicks() {
 			log.FileLog("JSON Unmarshal err", err)
 		}
 
+		clickers[evt.Name].Click(&evt)
+
 		switch evt.Name {
-		case blockutils.DiskName:
-			disk.ClickDisk(&evt)
 		case blockutils.PackName:
 			packages.ClickPackages(&evt)
 		case blockutils.TempName:
