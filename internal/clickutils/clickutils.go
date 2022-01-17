@@ -43,3 +43,8 @@ func getFocusedOutput() *i3.Node {
 		return n.Type == i3.OutputNode
 	})
 }
+
+// Clickable is an interface that allows things to be clicked
+type Clickable interface {
+	Click(*Click)
+}
