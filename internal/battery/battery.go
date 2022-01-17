@@ -2,6 +2,7 @@ package battery
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"gobar/internal/blockutils"
 	"gobar/internal/log"
@@ -13,10 +14,15 @@ import (
 	"time"
 )
 
-var batRegex = regexp.MustCompile(`BAT[0-9]+`)
-var acRegex = regexp.MustCompile(`AC`)
-
 type bat rune
+
+// Battery - A block displaying the battery state
+type Battery struct {
+	block *blockutils.Block
+}
+
+const powerSupplyDir = "/sys/class/power_supply/"
+const name = blockutils.BatteryName
 
 // Enum of battery icons
 const (
@@ -27,6 +33,41 @@ const (
 	BatAlert    bat = BatFull + 4
 	BatCharging bat = '\uf0e7'
 )
+
+var batRegex = regexp.MustCompile(`BAT[0-9]+`)
+var acRegex = regexp.MustCompile(`AC`)
+
+// NewBattery - Returns a new battery block
+func NewBattery() *Battery {
+	return &Battery{
+		block: &blockutils.Block{
+			Name:        name,
+			Border:      blockutils.White,
+			BorderLeft:  0,
+			BorderRight: 0,
+			BorderTop:   0,
+			Urgent:      false,
+			FullText:    "",
+		},
+	}
+}
+
+// HasBattery - Returns true if a battery is found for the system
+func HasBattery() bool {
+	powerSupplies, err := ioutil.ReadDir(powerSupplyDir)
+	if err != nil {
+		log.FileLog(err)
+		return false
+	}
+
+	for _, f := range powerSupplies {
+		if batRegex.MatchString(f.Name()) {
+			return true
+		}
+	}
+
+	return false
+}
 
 func getACState(dir string) bool {
 	f, err := os.Open(dir + "/online")
@@ -101,28 +142,16 @@ func clearBatAlert() {
 
 }
 
-// GetBattery returns a block containing the system power state
-func GetBattery(timeout time.Duration, blockCh chan<- *blockutils.Block) {
-	const powerSupplyDir = "/sys/class/power_supply/"
+// Refresh - Refreshes the block containing the system power state
+func (b *Battery) Refresh(timeout time.Duration) {
 	var charging bool
 	batLevel := -1
-	hasBattery := false
-
-	batBlock := blockutils.Block{
-		Name:        blockutils.BatteryName,
-		Border:      blockutils.White,
-		BorderLeft:  0,
-		BorderRight: 0,
-		BorderTop:   0,
-		Urgent:      false,
-		FullText:    "",
+	powerSupplies, err := ioutil.ReadDir(powerSupplyDir)
+	if err != nil {
+		log.FileLog(err)
 	}
 
 	for {
-		powerSupplies, err := ioutil.ReadDir(powerSupplyDir)
-		if err != nil {
-			log.FileLog(err)
-		}
 		//TODO: Handle multiple power supplies.
 		for _, f := range powerSupplies {
 			if acRegex.MatchString(f.Name()) {
@@ -131,39 +160,42 @@ func GetBattery(timeout time.Duration, blockCh chan<- *blockutils.Block) {
 
 			if batRegex.MatchString(f.Name()) {
 				batLevel = getBatteryPct(powerSupplyDir + f.Name())
-				hasBattery = true
 			}
 		}
 
 		if charging {
-			batBlock.FullText = string(BatCharging)
+			b.block.FullText = string(BatCharging)
 		} else {
 			switch {
 			case batLevel < 10:
-				batBlock.FullText = string(BatAlert)
+				b.block.FullText = string(BatAlert)
 				showBatAlert()
 			case batLevel < 26:
-				batBlock.FullText = string(Bat25)
+				b.block.FullText = string(Bat25)
 			case batLevel < 51:
-				batBlock.FullText = string(Bat50)
+				b.block.FullText = string(Bat50)
 			case batLevel < 76:
-				batBlock.FullText = string(Bat75)
+				b.block.FullText = string(Bat75)
 			default:
-				batBlock.FullText = string(BatFull)
+				b.block.FullText = string(BatFull)
 			}
 		}
-		batBlock.FullText += fmt.Sprintf(" %d%%", batLevel)
+		b.block.FullText += fmt.Sprintf(" %d%%", batLevel)
 
 		if batLevel >= 10 {
 			clearBatAlert()
 		}
 
-		if hasBattery {
-			blockCh <- &batBlock
-		} else {
-			return
-		}
-
 		time.Sleep(timeout)
 	}
+}
+
+// Marshal - Marshals the battery block into json
+func (b *Battery) Marshal() []byte {
+	out, err := json.Marshal(b.block)
+	if err != nil {
+		log.FileLog(err)
+		return []byte("{}")
+	}
+	return out
 }
