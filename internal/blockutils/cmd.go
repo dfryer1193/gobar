@@ -3,6 +3,7 @@ package blockutils
 import (
 	"bufio"
 	"gobar/internal/log"
+	"os"
 	"os/exec"
 )
 
@@ -34,4 +35,14 @@ func RunCmdStdout(cmd *exec.Cmd) ([]string, error) {
 		return nil, err
 	}
 	return stdoutLines, nil
+}
+
+// Homedir - returns the user's homedir
+func Homedir() string {
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		log.FileLog("Couldn't get homedir: ", err)
+	}
+
+	return homedir
 }
