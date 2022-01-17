@@ -1,6 +1,7 @@
 package media
 
 import (
+	"encoding/json"
 	"gobar/internal/blockutils"
 	"gobar/internal/clickutils"
 	"gobar/internal/log"
@@ -8,13 +9,13 @@ import (
 	"time"
 )
 
-//TODO: This is lazy - I should find a better way to do this eventually.
-var state = mediaState{
-	lastPlayer: "",
-	text:       "",
-	head:       -1,
-	tail:       -1,
+// Media - a media block
+type Media struct {
+	block *blockutils.Block
+	state *mediaState
 }
+
+const name = blockutils.MediaName
 
 func getPlayers() []string {
 	cmd := exec.Command("playerctl", "-l")
@@ -23,6 +24,27 @@ func getPlayers() []string {
 		log.FileLog(err)
 	}
 	return out
+}
+
+// NewMedia - Returns a new media block
+func NewMedia() *Media {
+	return &Media{
+		block: &blockutils.Block{
+			Name:        name,
+			Border:      blockutils.Red,
+			BorderLeft:  0,
+			BorderRight: 0,
+			BorderTop:   0,
+			Urgent:      false,
+			FullText:    "",
+		},
+		state: &mediaState{
+			lastPlayer: "",
+			text:       "",
+			head:       -1,
+			tail:       -1,
+		},
+	}
 }
 
 func getCurPlayer(players []string) string {
@@ -53,28 +75,19 @@ func getPlayerState(player string) string {
 	return string('\uf04b')
 }
 
-// GetMedia sends media information for the media block
-func GetMedia(timeout time.Duration, blockCh chan<- *blockutils.Block) {
+// Refresh - Refresh media information for the media block
+func (m *Media) Refresh(timeout time.Duration) {
 	fmtStr := `{{ artist }} - {{ title }}`
-	mediaBlock := blockutils.Block{
-		Name:        blockutils.MediaName,
-		Border:      blockutils.Red,
-		BorderLeft:  0,
-		BorderRight: 0,
-		BorderTop:   0,
-		Urgent:      false,
-		FullText:    "",
-	}
 
 	for {
 		tmp := getCurPlayer(getPlayers())
 
 		if tmp != "" {
-			state.lastPlayer = tmp
+			m.state.lastPlayer = tmp
 		}
 
-		if state.lastPlayer != "" {
-			infoCmd := exec.Command("playerctl", "-p", state.lastPlayer, "metadata", "-f", fmtStr)
+		if m.state.lastPlayer != "" {
+			infoCmd := exec.Command("playerctl", "-p", m.state.lastPlayer, "metadata", "-f", fmtStr)
 			curState, err := blockutils.RunCmdStdout(infoCmd)
 			if err != nil {
 				log.FileLog(err)
@@ -83,23 +96,32 @@ func GetMedia(timeout time.Duration, blockCh chan<- *blockutils.Block) {
 
 			if len(curState) > 0 {
 				if curState[0] != "" {
-					if curState[0] != state.text {
-						state.text = curState[0]
-						state.head = -1
-						state.tail = -1
+					if curState[0] != m.state.text {
+						m.state.text = curState[0]
+						m.state.head = -1
+						m.state.tail = -1
 					}
-					mediaBlock.FullText = getPlayerState(state.lastPlayer) + " " + state.scroll()
+					m.block.FullText = getPlayerState(m.state.lastPlayer) + " " + m.state.scroll()
 				}
 			}
 		}
 
-		blockCh <- &mediaBlock
 		time.Sleep(timeout)
 	}
 }
 
-// ClickMedia handles click events for the media block.
-func ClickMedia(evt *clickutils.Click) {
+// Marshal - Marshals the block block into json
+func (m *Media) Marshal() []byte {
+	out, err := json.Marshal(m.block)
+	if err != nil {
+		log.FileLog(err)
+		return []byte("{}")
+	}
+	return out
+}
+
+// Click handles click events for the media block.
+func (m *Media) Click(evt *clickutils.Click) {
 	action := ""
 
 	switch evt.Button {
@@ -111,7 +133,7 @@ func ClickMedia(evt *clickutils.Click) {
 		action = "next"
 	}
 
-	cmd := exec.Command("playerctl", "-p", state.lastPlayer, action)
+	cmd := exec.Command("playerctl", "-p", m.state.lastPlayer, action)
 
 	if err := cmd.Run(); err != nil {
 		log.FileLog("Could not control media:", err)
