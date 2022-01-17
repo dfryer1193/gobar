@@ -1,34 +1,55 @@
 package packages
 
 import (
+	"encoding/json"
 	"gobar/internal/blockutils"
 	"gobar/internal/clickutils"
 	"gobar/internal/log"
-	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 )
 
-// GetPackages returns a block containing the count of system packages to be
+// Packages represents a package block
+type Packages struct {
+	Block  *blockutils.Block
+	Widget *clickutils.Widget
+}
+
+const name = blockutils.PackName
+
+var homedir = blockutils.Homedir()
+
+// NewPackages - returns a new Packages object
+func NewPackages() *Packages {
+	return &Packages{
+		Block: &blockutils.Block{
+			Name:        name,
+			Border:      blockutils.Green,
+			BorderLeft:  0,
+			BorderRight: 0,
+			BorderTop:   0,
+			Urgent:      false,
+			FullText:    "",
+		},
+		Widget: &clickutils.Widget{
+			Title:  name,
+			Cmd:    `exec alacritty --hold -t "` + name + `" -e ` + homedir + `/.bin/updateNames.sh`,
+			Width:  300,
+			Height: 500,
+		},
+	}
+}
+
+// Refresh updates the Packages block with the count of system packages to be
 // upgraded. It also uses the icon to indicate whether or not the system will
 // need a reboot after upgrade
-func GetPackages(timeout time.Duration, blockCh chan<- *blockutils.Block) {
+func (p *Packages) Refresh(timeout time.Duration) {
 	const updateSym = '\uf077'
 	const rebootSym = '\uf139'
 	var prefix string
-	homedir, _ := os.UserHomeDir()
 	packageCount := 0
-	packBlock := blockutils.Block{
-		Name:        blockutils.PackName,
-		Border:      blockutils.Green,
-		BorderLeft:  0,
-		BorderRight: 0,
-		BorderTop:   0,
-		Urgent:      false,
-		FullText:    "",
-	}
 
 	for {
 		cmd := exec.Command(homedir + "/.bin/yayupdates")
@@ -48,28 +69,28 @@ func GetPackages(timeout time.Duration, blockCh chan<- *blockutils.Block) {
 			}
 		}
 
-		packBlock.FullText = prefix + " " + strconv.Itoa(packageCount)
+		p.Block.FullText = prefix + " " + strconv.Itoa(packageCount)
 
-		blockCh <- &packBlock
 		time.Sleep(timeout)
 	}
 }
 
-// ClickPackages handles click events on the package block
-func ClickPackages(evt *clickutils.Click) {
-	w := clickutils.GetWidget(evt.Name)
-	if w.Cmd == "" {
-		homedir, err := os.UserHomeDir()
-		if err != nil {
-			log.FileLog("Couldn't get home dir:", err)
-		}
-		w.Cmd = `exec alacritty --hold -t "` + evt.Name + `" -e ` + homedir + `/.bin/updateNames.sh`
-		w.Width = 300
-		w.Height = 500
+// Marshal - Marshals the packages block into json
+func (p *Packages) Marshal() []byte {
+	out, err := json.Marshal(p.Block)
+	if err != nil {
+		log.FileLog(err)
+		return []byte("{}")
 	}
+
+	return out
+}
+
+// Click - handles click events on the package block
+func (p *Packages) Click(evt *clickutils.Click) {
 	switch evt.Button {
 	case clickutils.LeftClick:
-		err := w.Toggle(evt.X, evt.Y)
+		err := p.Widget.Toggle(evt.X, evt.Y)
 		if err != nil {
 			log.FileLog(err)
 		}
