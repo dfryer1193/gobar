@@ -1,6 +1,7 @@
 package volume
 
 import (
+	"encoding/json"
 	"gobar/internal/blockutils"
 	"gobar/internal/clickutils"
 	"gobar/internal/log"
@@ -9,24 +10,37 @@ import (
 	"time"
 )
 
+// Volume - a volume block
+type Volume struct {
+	block *blockutils.Block
+}
+
+const name = blockutils.VolName
+const soundOnSym = '\uf028'
+const soundOffSym = '\uf026'
+
 var stateRegex = regexp.MustCompile(`\[(on|off)\]`)
 var volRegex = regexp.MustCompile(`[0-9]{1,3}%`)
 
-// GetVolume returns a block containing the system volume
-func GetVolume(timeout time.Duration, blockCh chan<- *blockutils.Block) {
-	const soundOnSym = '\uf028'
-	const soundOffSym = '\uf026'
+// NewVolume - returns a new volume block
+func NewVolume() *Volume {
+	return &Volume{
+		block: &blockutils.Block{
+			Name:        name,
+			Border:      blockutils.White,
+			BorderLeft:  0,
+			BorderRight: 0,
+			BorderTop:   0,
+			Urgent:      false,
+			FullText:    "",
+		},
+	}
+}
+
+// Refresh - Refreshes the block containing the system volume
+func (v *Volume) Refresh(timeout time.Duration) {
 	var state string
 	var volume string
-	volBlock := blockutils.Block{
-		Name:        blockutils.VolName,
-		Border:      blockutils.White,
-		BorderLeft:  0,
-		BorderRight: 0,
-		BorderTop:   0,
-		Urgent:      false,
-		FullText:    "",
-	}
 
 	for {
 		cmd := exec.Command("amixer", "get", "Master")
@@ -45,20 +59,28 @@ func GetVolume(timeout time.Duration, blockCh chan<- *blockutils.Block) {
 			}
 
 			if state == "[off]" {
-				volBlock.FullText = string(soundOffSym) + " MUTE"
+				v.block.FullText = string(soundOffSym) + " MUTE"
 			} else {
-				volBlock.FullText = string(soundOnSym) + " " + volume
+				v.block.FullText = string(soundOnSym) + " " + volume
 			}
 		}
-
-		blockCh <- &volBlock
 
 		time.Sleep(timeout)
 	}
 }
 
-// ClickVolume handles click events for the volume block
-func ClickVolume(evt *clickutils.Click) {
+// Marshal - Marshals the volume block into json
+func (v *Volume) Marshal() []byte {
+	out, err := json.Marshal(v.block)
+	if err != nil {
+		log.FileLog(err)
+		return []byte("{}")
+	}
+	return out
+}
+
+// Click - Handles click events for the volume block
+func (v *Volume) Click(evt *clickutils.Click) {
 	action := ""
 	sndChannel := "Master"
 
