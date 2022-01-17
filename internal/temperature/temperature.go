@@ -2,6 +2,7 @@ package temperature
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"gobar/internal/blockutils"
 	"gobar/internal/clickutils"
@@ -13,8 +14,42 @@ import (
 	"time"
 )
 
+// Temperature - a block for displaying the temperature
+type Temperature struct {
+	block  *blockutils.Block
+	widget *clickutils.Widget
+}
+
+const name = blockutils.TempName
+const tempSym = '\uf769'
+
 var coretempRegex = regexp.MustCompile(`coretemp\.[0-9]+`)
 var hwmonRegex = regexp.MustCompile(`hwmon[0-9]`)
+var thermMon = findHWMon()
+var tempPath = thermMon + "/temp1_input"
+var alarmPath = thermMon + "/temp1_crit"
+var thresh = getTempFromPath(alarmPath)
+
+// NewTemperature - returns a new temperature block
+func NewTemperature() *Temperature {
+	return &Temperature{
+		block: &blockutils.Block{
+			Name:        name,
+			Border:      blockutils.Blue,
+			BorderLeft:  0,
+			BorderRight: 0,
+			BorderTop:   0,
+			Urgent:      false,
+			FullText:    "",
+		},
+		widget: &clickutils.Widget{
+			Title:  name,
+			Cmd:    `exec alacritty --hold -t "` + name + `" -e echo $(cat /proc/loadavg | cut -d \  -f -3)`,
+			Width:  115,
+			Height: 50,
+		},
+	}
+}
 
 func getTempFromPath(path string) float64 {
 	var tmpBytes []byte
@@ -64,52 +99,37 @@ func findHWMon() string {
 	return ""
 }
 
-// GetTemp returns a block containing the cpu temperature
-func GetTemp(timeout time.Duration, blockCh chan<- *blockutils.Block) {
-	const tempSym = '\uf769'
-	thermMon := findHWMon()
-	if thermMon == "" {
-		return
-	}
-	tempPath := thermMon + "/temp1_input"
-	alarmPath := thermMon + "/temp1_crit"
-	tempBlock := blockutils.Block{
-		Name:        blockutils.TempName,
-		Border:      blockutils.Blue,
-		BorderLeft:  0,
-		BorderRight: 0,
-		BorderTop:   0,
-		Urgent:      false,
-		FullText:    "",
-	}
-
-	thresh := getTempFromPath(alarmPath)
-
+// Refresh - refreshes the block containing the cpu temperature
+func (t *Temperature) Refresh(timeout time.Duration) {
 	for {
 		tempVal := getTempFromPath(tempPath)
 		if tempVal > thresh {
-			tempBlock.Urgent = true
+			t.block.Urgent = true
+		} else {
+			t.block.Urgent = false
 		}
 
-		tempBlock.FullText = fmt.Sprintf("%s %3.1f°C", string(tempSym), tempVal)
+		t.block.FullText = fmt.Sprintf("%s %3.1f°C", string(tempSym), tempVal)
 
-		blockCh <- &tempBlock
 		time.Sleep(timeout)
 	}
 }
 
-// ClickTemp handles click events for the temperature block
-func ClickTemp(evt *clickutils.Click) {
-	w := clickutils.GetWidget(evt.Name)
-	if w.Cmd == "" {
-		w.Cmd = `exec alacritty --hold -t "` + evt.Name + `" -e echo $(cat /proc/loadavg | cut -d \  -f -3)`
-		w.Width = 115
-		w.Height = 50
+// Marshal - Marshals the temperature block into json
+func (t *Temperature) Marshal() []byte {
+	out, err := json.Marshal(t.block)
+	if err != nil {
+		log.FileLog(err)
+		return []byte("{}")
 	}
+	return out
+}
 
+// Click handles click events for the temperature block
+func (t *Temperature) Click(evt *clickutils.Click) {
 	switch evt.Button {
 	case clickutils.LeftClick:
-		err := w.Toggle(evt.X, evt.Y)
+		err := t.widget.Toggle(evt.X, evt.Y)
 		if err != nil {
 			log.FileLog(err)
 		}
