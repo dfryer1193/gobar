@@ -2,7 +2,6 @@ package bar
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"gobar/internal/battery"
@@ -22,70 +21,56 @@ import (
 )
 
 var diskBlk = disk.NewDisk()
+var packBlk = packages.NewPackages()
+var tempBlk = temperature.NewTemperature()
+var volBlk = volume.NewVolume()
+var mediaBlk = media.NewMedia()
+var dateBlk = date.NewDate()
+var timeBlk = systime.NewSystime()
+var batBlk = battery.NewBattery()
 
 // PrintBlocks prints all blocks and handles click events
 func PrintBlocks() {
-	empty := []byte("{}")
-
-	packJSON := empty
-	tempJSON := empty
-	volJSON := empty
-	mediaJSON := empty
-	dateJSON := empty
-	sysTimeJSON := empty
-	batJSON := empty
-
-	var err error
-
-	blockCh := make(chan *blockutils.Block, 1)
+	hasBattery := battery.HasBattery()
 
 	go diskBlk.Refresh(5 * time.Second)
-	go packages.GetPackages(1*time.Hour, blockCh)
-	go temperature.GetTemp(1*time.Second, blockCh)
-	go volume.GetVolume(1*time.Second, blockCh)
-	go media.GetMedia(1*time.Second, blockCh)
-	go date.GetDate(1*time.Hour, blockCh)
-	go systime.GetTime(1*time.Second, blockCh)
-	go battery.GetBattery(5*time.Second, blockCh)
+	go packBlk.Refresh(1 * time.Hour)
+	go tempBlk.Refresh(1 * time.Second)
+	go volBlk.Refresh(1 * time.Second)
+	go mediaBlk.Refresh(1 * time.Second)
+	go dateBlk.Refresh(1 * time.Hour)
+	go timeBlk.Refresh(1 * time.Second)
+	if hasBattery {
+		go batBlk.Refresh(5 * time.Second)
+	}
 
 	for {
-		select {
-		case blk := <-blockCh:
-			switch blk.Name {
-			case blockutils.PackName:
-				packJSON, err = json.Marshal(blk)
-			case blockutils.TempName:
-				tempJSON, err = json.Marshal(blk)
-			case blockutils.VolName:
-				volJSON, err = json.Marshal(blk)
-			case blockutils.MediaName:
-				mediaJSON, err = json.Marshal(blk)
-			case blockutils.DateName:
-				dateJSON, err = json.Marshal(blk)
-			case blockutils.TimeName:
-				sysTimeJSON, err = json.Marshal(blk)
-			case blockutils.BatteryName:
-				batJSON, err = json.Marshal(blk)
-			}
-		}
-		if err != nil {
-			log.FileLog(err)
-		}
+		fmt.Printf(
+			",[%s,%s,%s,%s,%s,%s,%s",
+			diskBlk.Marshal(),
+			packBlk.Marshal(),
+			tempBlk.Marshal(),
+			volBlk.Marshal(),
+			mediaBlk.Marshal(),
+			dateBlk.Marshal(),
+			timeBlk.Marshal(),
+		)
 
-		fmt.Printf(",[%s,%s,%s,%s,%s,%s,%s", diskBlk.Marshal(),
-			packJSON,
-			tempJSON,
-			volJSON,
-			mediaJSON,
-			dateJSON,
-			sysTimeJSON)
-
-		if !bytes.Equal(batJSON, empty) {
-			fmt.Printf(",%s", batJSON)
+		if hasBattery {
+			fmt.Printf(",%s", batBlk.Marshal())
 		}
 
 		fmt.Printf("]")
 	}
+}
+
+var clickers = map[string]clickutils.Clickable{
+	blockutils.DiskName:  diskBlk,
+	blockutils.PackName:  packBlk,
+	blockutils.TempName:  tempBlk,
+	blockutils.VolName:   volBlk,
+	blockutils.MediaName: mediaBlk,
+	blockutils.DateName:  dateBlk,
 }
 
 // HandleClicks handles click events for the bar
@@ -113,18 +98,5 @@ func HandleClicks() {
 		}
 
 		clickers[evt.Name].Click(&evt)
-
-		switch evt.Name {
-		case blockutils.PackName:
-			packages.ClickPackages(&evt)
-		case blockutils.TempName:
-			temperature.ClickTemp(&evt)
-		case blockutils.VolName:
-			volume.ClickVolume(&evt)
-		case blockutils.MediaName:
-			media.ClickMedia(&evt)
-		case blockutils.DateName:
-			date.ClickDate(&evt)
-		}
 	}
 }
