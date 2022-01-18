@@ -44,9 +44,9 @@ func NewTemperature() *Temperature {
 		},
 		widget: &clickutils.Widget{
 			Title:  name,
-			Cmd:    `exec alacritty --hold -t "` + name + `" -e echo $(cat /proc/loadavg | cut -d \  -f -3)`,
-			Width:  115,
-			Height: 50,
+			Cmd:    `exec alacritty --hold -t "` + name + `" -e htop`,
+			Width:  664,
+			Height: 168,
 		},
 	}
 }
