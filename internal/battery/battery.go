@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -99,7 +100,8 @@ func getBatteryPct(dir string) int {
 		return -1
 	}
 
-	val, err := strconv.Atoi(string(text))
+	pct := strings.ReplaceAll(string(text), "\n", "")
+	val, err := strconv.Atoi(pct)
 	if err != nil {
 		log.FileLog(err)
 		return -1
@@ -117,7 +119,7 @@ func showBatAlert() {
 		cmd := exec.Command("notify-send", "Low Battery", "Your battery is below 10%")
 		cmd.Run()
 
-		f, err := os.Create(homedir + "/.i3/.bat_notified")
+		f, err := os.Create(homedir + "/.bat_notified")
 		if err != nil {
 			log.FileLog(err)
 		}
