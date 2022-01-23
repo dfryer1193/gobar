@@ -75,15 +75,15 @@ func (p *Packages) Refresh(timeout time.Duration) {
 	}
 }
 
-// Marshal - Marshals the packages block into json
-func (p *Packages) Marshal() []byte {
+//String - the string representation of a Media block
+func (p *Packages) String() string {
 	out, err := json.Marshal(p.Block)
 	if err != nil {
 		log.FileLog(err)
-		return []byte("{}")
+		return "{}"
 	}
 
-	return out
+	return string(out)
 }
 
 // Click - handles click events on the package block

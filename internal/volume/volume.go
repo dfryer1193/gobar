@@ -69,14 +69,14 @@ func (v *Volume) Refresh(timeout time.Duration) {
 	}
 }
 
-// Marshal - Marshals the volume block into json
-func (v *Volume) Marshal() []byte {
+// String - the string representation of a Volume block
+func (v *Volume) String() string {
 	out, err := json.Marshal(v.block)
 	if err != nil {
 		log.FileLog(err)
-		return []byte("{}")
+		return "{}"
 	}
-	return out
+	return string(out)
 }
 
 // Click - Handles click events for the volume block

@@ -43,12 +43,12 @@ func (s *Systime) Refresh(timeout time.Duration) {
 	}
 }
 
-// Marshal - Marshals the time block into json
-func (s *Systime) Marshal() []byte {
+//String - the string representation of a Systime block
+func (s *Systime) String() string {
 	out, err := json.Marshal(s.block)
 	if err != nil {
 		log.FileLog(err)
-		return []byte("{}")
+		return "{}"
 	}
-	return out
+	return string(out)
 }

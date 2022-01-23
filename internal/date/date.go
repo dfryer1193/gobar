@@ -50,14 +50,14 @@ func (d *Date) Refresh(timeout time.Duration) {
 	}
 }
 
-// Marshal - Marshals the date block into json
-func (d *Date) Marshal() []byte {
+// String - The string representation of a Date block
+func (d *Date) String() string {
 	out, err := json.Marshal(d.block)
 	if err != nil {
 		log.FileLog(err)
-		return []byte("{}")
+		return "{}"
 	}
-	return out
+	return string(out)
 }
 
 // Click - Handles click events for the date block

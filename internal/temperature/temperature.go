@@ -115,14 +115,14 @@ func (t *Temperature) Refresh(timeout time.Duration) {
 	}
 }
 
-// Marshal - Marshals the temperature block into json
-func (t *Temperature) Marshal() []byte {
+// String - the string representation of a Temperature block
+func (t *Temperature) String() string {
 	out, err := json.Marshal(t.block)
 	if err != nil {
 		log.FileLog(err)
-		return []byte("{}")
+		return "{}"
 	}
-	return out
+	return string(out)
 }
 
 // Click handles click events for the temperature block

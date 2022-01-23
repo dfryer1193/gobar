@@ -192,12 +192,12 @@ func (b *Battery) Refresh(timeout time.Duration) {
 	}
 }
 
-// Marshal - Marshals the battery block into json
-func (b *Battery) Marshal() []byte {
+// String - Gets the string representation of the battery block
+func (b *Battery) String() string {
 	out, err := json.Marshal(b.block)
 	if err != nil {
 		log.FileLog(err)
-		return []byte("{}")
+		return "{}"
 	}
-	return out
+	return string(out)
 }

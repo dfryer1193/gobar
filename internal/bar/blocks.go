@@ -47,17 +47,17 @@ func PrintBlocks() {
 	for {
 		fmt.Printf(
 			",[%s,%s,%s,%s,%s,%s,%s",
-			diskBlk.Marshal(),
-			packBlk.Marshal(),
-			tempBlk.Marshal(),
-			volBlk.Marshal(),
-			mediaBlk.Marshal(),
-			dateBlk.Marshal(),
-			timeBlk.Marshal(),
+			diskBlk,
+			packBlk,
+			tempBlk,
+			volBlk,
+			mediaBlk,
+			dateBlk,
+			timeBlk,
 		)
 
 		if hasBattery {
-			fmt.Printf(",%s", batBlk.Marshal())
+			fmt.Printf(",%s", batBlk)
 		}
 
 		fmt.Printf("]")

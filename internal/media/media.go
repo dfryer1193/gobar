@@ -110,14 +110,14 @@ func (m *Media) Refresh(timeout time.Duration) {
 	}
 }
 
-// Marshal - Marshals the block block into json
-func (m *Media) Marshal() []byte {
+// String - the string representation of a Media block
+func (m *Media) String() string {
 	out, err := json.Marshal(m.block)
 	if err != nil {
 		log.FileLog(err)
-		return []byte("{}")
+		return "{}"
 	}
-	return out
+	return string(out)
 }
 
 // Click handles click events for the media block.

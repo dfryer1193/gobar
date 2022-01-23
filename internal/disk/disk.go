@@ -66,14 +66,14 @@ func (d *Disk) Refresh(timeout time.Duration) {
 	}
 }
 
-// Marshal - Marshals the disk block into json
-func (d *Disk) Marshal() []byte {
+// String - The string representation of a Disk block
+func (d *Disk) String() string {
 	out, err := json.Marshal(d.block)
 	if err != nil {
 		log.FileLog(err)
-		return []byte("{}")
+		return "{}"
 	}
-	return out
+	return string(out)
 }
 
 // Click - handles click events for the disk block
