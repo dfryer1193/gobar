@@ -1,4 +1,4 @@
-package main
+package log
 
 import (
 	"log"
@@ -7,7 +7,8 @@ import (
 
 const logFile string = "/.i3/gobar.log"
 
-func fileLog(v ...interface{}) {
+// FileLog logs its args to a file in the local filesystem
+func FileLog(v ...interface{}) {
 	homedir, err := os.UserHomeDir()
 	if err != nil {
 		return
