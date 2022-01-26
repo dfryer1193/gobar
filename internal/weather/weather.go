@@ -35,7 +35,7 @@ func NewWeather() *Weather {
 		},
 		widget: &clickutils.Widget{
 			Title:  name,
-			Cmd:    `exec alacritty --hold -t "` + name + `" -e curl v2n.wttr.in`,
+			Cmd:    `exec alacritty --hold -t "` + name + `" -e curl v2.wttr.in`,
 			Width:  592,
 			Height: 766,
 		},
