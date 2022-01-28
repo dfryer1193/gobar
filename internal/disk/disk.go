@@ -17,7 +17,7 @@ type Disk struct {
 }
 
 const name = blockutils.DiskName
-const hddRune = '\uf51f'
+const hddRune = '\uf7c9'
 
 // NewDisk - returns a new Disk object
 func NewDisk() *Disk {
