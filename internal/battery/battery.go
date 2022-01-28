@@ -27,12 +27,24 @@ const name = blockutils.BatteryName
 
 // Enum of battery icons
 const (
-	BatFull     bat = '\uf240'
-	Bat75       bat = BatFull + 1
-	Bat50       bat = BatFull + 2
-	Bat25       bat = BatFull + 3
-	BatAlert    bat = BatFull + 4
-	BatCharging bat = '\uf0e7'
+	BatFull     bat = '\uf578'
+	Bat10       bat = BatFull + 1
+	Bat20       bat = BatFull + 2
+	Bat30       bat = BatFull + 3
+	Bat40       bat = BatFull + 4
+	Bat50       bat = BatFull + 5
+	Bat60       bat = BatFull + 6
+	Bat70       bat = BatFull + 7
+	Bat80       bat = BatFull + 8
+	Bat90       bat = BatFull + 9
+	BatAlert    bat = BatFull + 10
+	BatCharged  bat = '\uf584'
+	Bat10Charge bat = BatCharged + 1
+	Bat25Charge bat = BatCharged + 2
+	Bat50Charge bat = BatCharged + 3
+	Bat65Charge bat = BatCharged + 4
+	Bat80Charge bat = BatCharged + 5
+	Bat95Charge bat = BatCharged + 6
 )
 
 var batRegex = regexp.MustCompile(`BAT[0-9]+`)
@@ -166,18 +178,45 @@ func (b *Battery) Refresh(timeout time.Duration) {
 		}
 
 		if charging {
-			b.block.FullText = string(BatCharging)
+			switch {
+			case batLevel < 11:
+				b.block.FullText = string(Bat10Charge)
+			case batLevel < 26:
+				b.block.FullText = string(Bat25Charge)
+			case batLevel < 51:
+				b.block.FullText = string(Bat50Charge)
+			case batLevel < 66:
+				b.block.FullText = string(Bat65Charge)
+			case batLevel < 81:
+				b.block.FullText = string(Bat80Charge)
+			case batLevel < 96:
+				b.block.FullText = string(Bat95Charge)
+			default:
+				b.block.FullText = string(BatCharged)
+			}
 		} else {
 			switch {
 			case batLevel < 10:
 				b.block.FullText = string(BatAlert)
 				showBatAlert()
-			case batLevel < 26:
-				b.block.FullText = string(Bat25)
-			case batLevel < 51:
+			case batLevel < 20:
+				b.block.FullText = string(Bat10)
+			case batLevel < 30:
+				b.block.FullText = string(Bat20)
+			case batLevel < 40:
+				b.block.FullText = string(Bat30)
+			case batLevel < 50:
+				b.block.FullText = string(Bat40)
+			case batLevel < 60:
 				b.block.FullText = string(Bat50)
-			case batLevel < 76:
-				b.block.FullText = string(Bat75)
+			case batLevel < 70:
+				b.block.FullText = string(Bat60)
+			case batLevel < 80:
+				b.block.FullText = string(Bat70)
+			case batLevel < 90:
+				b.block.FullText = string(Bat80)
+			case batLevel < 95:
+				b.block.FullText = string(Bat90)
 			default:
 				b.block.FullText = string(BatFull)
 			}
