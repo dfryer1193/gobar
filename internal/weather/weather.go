@@ -7,6 +7,7 @@ import (
 	"gobar/internal/log"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -63,6 +64,18 @@ func (w *Weather) Refresh(timeout time.Duration) {
 
 		body, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
+		if err != nil {
+			log.FileLog("Cannot read wttr.in response body")
+			w.block.FullText = ""
+			continue
+		}
+
+		if strings.HasPrefix(string(body), "Unknown location") {
+			log.FileLog("wttr.in is down")
+			w.block.FullText = ""
+			continue
+
+		}
 
 		w.block.FullText = string(body)
 
