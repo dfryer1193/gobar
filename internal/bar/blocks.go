@@ -15,11 +15,13 @@ import (
 	"gobar/internal/systime"
 	"gobar/internal/temperature"
 	"gobar/internal/volume"
+	"gobar/internal/weather"
 	"os"
 	"strings"
 	"time"
 )
 
+var weatherBlk = weather.NewWeather()
 var diskBlk = disk.NewDisk()
 var packBlk = packages.NewPackages()
 var tempBlk = temperature.NewTemperature()
@@ -33,6 +35,7 @@ var batBlk = battery.NewBattery()
 func PrintBlocks() {
 	hasBattery := battery.HasBattery()
 
+	go weatherBlk.Refresh(1 * time.Hour)
 	go diskBlk.Refresh(5 * time.Second)
 	go packBlk.Refresh(1 * time.Hour)
 	go tempBlk.Refresh(1 * time.Second)
@@ -46,7 +49,8 @@ func PrintBlocks() {
 
 	for {
 		fmt.Printf(
-			",[%s,%s,%s,%s,%s,%s,%s",
+			",[%s, %s,%s,%s,%s,%s,%s,%s",
+			weatherBlk,
 			diskBlk,
 			packBlk,
 			tempBlk,
@@ -66,12 +70,13 @@ func PrintBlocks() {
 }
 
 var clickers = map[string]clickutils.Clickable{
-	blockutils.DiskName:  diskBlk,
-	blockutils.PackName:  packBlk,
-	blockutils.TempName:  tempBlk,
-	blockutils.VolName:   volBlk,
-	blockutils.MediaName: mediaBlk,
-	blockutils.DateName:  dateBlk,
+	blockutils.WeatherName: weatherBlk,
+	blockutils.DiskName:    diskBlk,
+	blockutils.PackName:    packBlk,
+	blockutils.TempName:    tempBlk,
+	blockutils.VolName:     volBlk,
+	blockutils.MediaName:   mediaBlk,
+	blockutils.DateName:    dateBlk,
 }
 
 // HandleClicks handles click events for the bar
@@ -98,6 +103,8 @@ func HandleClicks() {
 			log.FileLog("JSON Unmarshal err", err)
 		}
 
-		clickers[evt.Name].Click(&evt)
+		if clicker, ok := clickers[evt.Name]; ok {
+			clicker.Click(&evt)
+		}
 	}
 }

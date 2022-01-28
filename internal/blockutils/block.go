@@ -2,6 +2,7 @@ package blockutils
 
 // Enum for block names
 const (
+	WeatherName string = "WEATHER"
 	DiskName    string = "DISK"
 	PackName    string = "PACKAGES"
 	TempName    string = "TEMPERATURE"
