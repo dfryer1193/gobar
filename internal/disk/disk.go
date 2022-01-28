@@ -5,8 +5,8 @@ import (
 	"gobar/internal/blockutils"
 	"gobar/internal/clickutils"
 	"gobar/internal/log"
-	"os/exec"
-	"strings"
+	"strconv"
+	"syscall"
 	"time"
 )
 
@@ -42,25 +42,19 @@ func NewDisk() *Disk {
 
 // Refresh - refreshes the information for the block on a set interval
 func (d *Disk) Refresh(timeout time.Duration) {
-	var diskSpace string
+	fsStat := &syscall.Statfs_t{}
 
 	for {
-		// TODO: Use syscall.Statfs for this.
-		cmd := exec.Command("df", "-h")
-		outLines, err := blockutils.RunCmdStdout(cmd)
+		err := syscall.Statfs("/home", fsStat)
 		if err != nil {
 			log.FileLog(err)
 		}
 
-		if outLines != nil {
-			for _, line := range outLines {
-				if strings.HasSuffix(line, "/home") {
-					diskSpace = strings.Fields(line)[3]
-					break
-				}
-			}
-			d.block.FullText = string(hddRune) + " " + diskSpace
-		}
+		// This will cause an overflow eventually...
+		free := fsStat.Bfree * uint64(fsStat.Bsize)
+		freeGb := free / 1073741824
+		freeGbStr := strconv.FormatUint(freeGb, 10)
+		d.block.FullText = string(hddRune) + " " + freeGbStr + "G"
 
 		time.Sleep(timeout)
 	}
