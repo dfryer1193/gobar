@@ -38,7 +38,7 @@ func NewWeather() *Weather {
 			Title:  name,
 			Cmd:    `exec alacritty --hold -t "` + name + `" -e curl v2.wttr.in`,
 			Width:  592,
-			Height: 766,
+			Height: 810,
 		},
 	}
 }
