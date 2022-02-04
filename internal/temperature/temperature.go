@@ -21,7 +21,7 @@ type Temperature struct {
 }
 
 const name = blockutils.TempName
-const tempSym = '\uf769'
+const tempSym = '\ue20a'
 
 var coretempRegex = regexp.MustCompile(`coretemp\.[0-9]+`)
 var hwmonRegex = regexp.MustCompile(`hwmon[0-9]`)
