@@ -64,7 +64,7 @@ func (n *Network) Refresh(timeout time.Duration) {
 		}
 
 		if state != gnm.NmStateConnectedGlobal {
-			n.block.FullText = string(disconnected)
+			n.block.FullText = string(disconnected) + " "
 			time.Sleep(timeout)
 			continue
 		}
