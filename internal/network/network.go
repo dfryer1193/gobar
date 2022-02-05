@@ -27,7 +27,7 @@ func NewNetwork() *Network {
 	return &Network{
 		block: &blockutils.Block{
 			Name:        name,
-			Border:      blockutils.Blue,
+			Border:      blockutils.Green,
 			BorderLeft:  0,
 			BorderRight: 0,
 			BorderTop:   0,

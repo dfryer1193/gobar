@@ -52,7 +52,7 @@ func PrintBlocks() {
 
 	for {
 		fmt.Printf(
-			",[%s, %s,%s,%s,%s,%s,%s,%s",
+			",[%s, %s,%s,%s,%s,%s,%s,%s, %s",
 			weatherBlk,
 			diskBlk,
 			packBlk,
@@ -61,13 +61,12 @@ func PrintBlocks() {
 			mediaBlk,
 			dateBlk,
 			timeBlk,
+			netBlk,
 		)
 
 		if hasBattery {
 			fmt.Printf(",%s", batBlk)
 		}
-
-		fmt.Printf(",%s", netBlk)
 
 		fmt.Printf("]")
 		time.Sleep(1 * time.Second)
