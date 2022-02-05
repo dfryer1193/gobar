@@ -11,6 +11,7 @@ import (
 	"gobar/internal/disk"
 	"gobar/internal/log"
 	"gobar/internal/media"
+	"gobar/internal/network"
 	"gobar/internal/packages"
 	"gobar/internal/systime"
 	"gobar/internal/temperature"
@@ -30,6 +31,7 @@ var mediaBlk = media.NewMedia()
 var dateBlk = date.NewDate()
 var timeBlk = systime.NewSystime()
 var batBlk = battery.NewBattery()
+var netBlk = network.NewNetwork()
 
 // PrintBlocks prints all blocks and handles click events
 func PrintBlocks() {
@@ -43,6 +45,7 @@ func PrintBlocks() {
 	go mediaBlk.Refresh(1 * time.Second)
 	go dateBlk.Refresh(1 * time.Hour)
 	go timeBlk.Refresh(1 * time.Second)
+	go netBlk.Refresh(30 * time.Second)
 	if hasBattery {
 		go batBlk.Refresh(5 * time.Second)
 	}
@@ -64,6 +67,8 @@ func PrintBlocks() {
 			fmt.Printf(",%s", batBlk)
 		}
 
+		fmt.Printf(",%s", netBlk)
+
 		fmt.Printf("]")
 		time.Sleep(1 * time.Second)
 	}
@@ -77,6 +82,7 @@ var clickers = map[string]clickutils.Clickable{
 	blockutils.VolName:     volBlk,
 	blockutils.MediaName:   mediaBlk,
 	blockutils.DateName:    dateBlk,
+	blockutils.NetworkName: netBlk,
 }
 
 // HandleClicks handles click events for the bar
