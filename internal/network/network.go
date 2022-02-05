@@ -132,10 +132,10 @@ func (n *Network) Refresh(timeout time.Duration) {
 		}
 
 		n.block.FullText = fmt.Sprintf(
-			"%s%s%d%%",
+			"%s%d%%%s",
 			string(connectedWifi),
-			ssid,
 			strength,
+			ssid,
 		)
 
 		time.Sleep(timeout)
