@@ -34,6 +34,12 @@ func NewNetwork() *Network {
 			Urgent:      false,
 			FullText:    "",
 		},
+		widget: &clickutils.Widget{
+			Title:  name,
+			Cmd:    `exec alacritty --hold -t "` + name + `" -e nmtui`,
+			Width:  676,
+			Height: 530,
+		},
 	}
 }
 
@@ -155,5 +161,11 @@ func (n *Network) String() string {
 
 // Click - handles click events for the click block
 func (n *Network) Click(evt *clickutils.Click) {
-
+	switch evt.Button {
+	case clickutils.LeftClick:
+		err := n.widget.Toggle(evt.X, evt.Y)
+		if err != nil {
+			log.FileLog(err)
+		}
+	}
 }
