@@ -11,6 +11,7 @@ const (
 	DateName    string = "DATE"
 	TimeName    string = "TIME"
 	BatteryName string = "BATTERY"
+	NetworkName string = "NETWORK"
 )
 
 // Block represents a "block" of information in the bar
