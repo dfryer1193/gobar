@@ -8,9 +8,9 @@ type mediaState struct {
 }
 
 func (state *mediaState) scroll() string {
-	if len(state.text) > 50 {
+	if len(state.text) > 25 {
 		if state.head == state.tail {
-			state.tail = 46
+			state.tail = 21
 		}
 
 		if state.tail+1 == len(state.text) {
