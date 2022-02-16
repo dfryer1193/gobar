@@ -108,7 +108,7 @@ func (n *Network) Refresh(timeout time.Duration) {
 		}
 
 		if devType != gnm.NmDeviceTypeWifi {
-			n.block.FullText = string(connectedLan)
+			n.block.FullText = string(connectedLan) + " "
 			time.Sleep(timeout)
 			continue
 		}
