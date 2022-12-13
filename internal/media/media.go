@@ -40,7 +40,7 @@ func NewMedia() *Media {
 		},
 		state: &mediaState{
 			lastPlayer: "",
-			text:       "",
+			text:       []rune{},
 			head:       -1,
 			tail:       -1,
 		},
@@ -96,8 +96,8 @@ func (m *Media) Refresh(timeout time.Duration) {
 
 			if len(curState) > 0 {
 				if curState[0] != "" {
-					if curState[0] != m.state.text {
-						m.state.text = curState[0]
+					if curState[0] != string(m.state.text) {
+						m.state.text = []rune(curState[0])
 						m.state.head = -1
 						m.state.tail = -1
 					}

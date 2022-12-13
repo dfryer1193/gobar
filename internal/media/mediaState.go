@@ -2,15 +2,15 @@ package media
 
 type mediaState struct {
 	lastPlayer string
-	text       string
+	text       []rune
 	head       int
 	tail       int
 }
 
 func (state *mediaState) scroll() string {
-	if len(state.text) > 50 {
+	if len(state.text) > 25 {
 		if state.head == state.tail {
-			state.tail = 46
+			state.tail = 21
 		}
 
 		if state.tail+1 == len(state.text) {
@@ -25,12 +25,12 @@ func (state *mediaState) scroll() string {
 		state.head++
 
 		if state.tail < state.head {
-			return state.text[state.head:] + "   " + state.text[:state.tail]
+			return string(state.text[state.head:]) + "   " + string(state.text[:state.tail])
 		}
 
-		return state.text[state.head:state.tail] + "..."
+		return string(state.text[state.head:state.tail]) + "..."
 	}
 	state.head = -1
 	state.tail = -1
-	return state.text
+	return string(state.text)
 }
