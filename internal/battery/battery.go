@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"gobar/internal/blockutils"
 	"gobar/internal/log"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
@@ -27,7 +26,7 @@ const name = blockutils.BatteryName
 
 // Enum of battery icons
 const (
-	BatFull     bat = '\uf578'
+	BatFull     bat = '\U000f0079'
 	Bat10       bat = BatFull + 1
 	Bat20       bat = BatFull + 2
 	Bat30       bat = BatFull + 3
@@ -38,7 +37,7 @@ const (
 	Bat80       bat = BatFull + 8
 	Bat90       bat = BatFull + 9
 	BatAlert    bat = BatFull + 10
-	BatCharged  bat = '\uf584'
+	BatCharged  bat = '\U000f0085'
 	Bat10Charge bat = BatCharged + 1
 	Bat25Charge bat = BatCharged + 2
 	Bat50Charge bat = BatCharged + 3
@@ -67,7 +66,7 @@ func NewBattery() *Battery {
 
 // HasBattery - Returns true if a battery is found for the system
 func HasBattery() bool {
-	powerSupplies, err := ioutil.ReadDir(powerSupplyDir)
+	powerSupplies, err := os.ReadDir(powerSupplyDir)
 	if err != nil {
 		log.FileLog(err)
 		return false
@@ -160,7 +159,7 @@ func clearBatAlert() {
 func (b *Battery) Refresh(timeout time.Duration) {
 	var charging bool
 	batLevel := -1
-	powerSupplies, err := ioutil.ReadDir(powerSupplyDir)
+	powerSupplies, err := os.ReadDir(powerSupplyDir)
 	if err != nil {
 		log.FileLog(err)
 	}
