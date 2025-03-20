@@ -18,8 +18,8 @@ type Network struct {
 }
 
 const name = blockutils.NetworkName
-const disconnected = '\ufaa9'
-const connectedWifi = '\ufaa8'
+const disconnected = rune(0xf05aa)
+const connectedWifi = rune(0xf05a9)
 const connectedLan = '\uf817'
 
 // NewNetwork returns a new network block
